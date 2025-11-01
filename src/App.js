@@ -1,5 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
+import { Routes, Route } from 'react-router-dom';
+import FilesService from './components/FilesService';
+import NavBar from './components/NavBar';
+
 
 function App() {
   return (
@@ -18,6 +22,11 @@ function App() {
           Learn React
         </a>
       </header>
+      <Routes>
+        <Route path="/" element={<div>Home Page</div>} />
+        <Route path="/print" element={<FilesService />} />
+      </Routes>
+      <NavBar />
     </div>
   );
 }
