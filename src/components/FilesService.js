@@ -26,8 +26,8 @@ export default function FilesService(){
             }
 
             try {
-                const ip = 'http://127.0.0.1';
-                const apiBase = `${ip}:5000`;
+                const ip = 'http://addipi-files.b3aaefdfe9dzdea0.swedencentral.azurecontainer.io:5000';
+                const apiBase = `${ip}`;
                 const result = await fetch(`${apiBase}/upload`, {
                     method: 'POST',
                     body: formData,
