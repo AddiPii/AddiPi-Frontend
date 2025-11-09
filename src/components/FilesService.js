@@ -26,7 +26,7 @@ export default function FilesService(){
             }
 
             try {
-                const ip = 'http://addipi-files.b3aaefdfe9dzdea0.swedencentral.azurecontainer.io:5000';
+                const ip = 'http://localhost:5000';
                 const apiBase = `${ip}`;
                 const result = await fetch(`${apiBase}/upload`, {
                     method: 'POST',
@@ -109,7 +109,7 @@ const Result = ({status}) => {
         case 'uploading':
             return <p>Uploading file, please wait...</p>;
         case 'success':
-            return <p>File uploaded successfully! Printing has started.</p>;
+            return <p>File uploaded successfully!</p>;
         case 'error':
             return <p>Error uploading file. Please try again.</p>;
         default:
