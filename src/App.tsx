@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import DashboardPage from './pages/DashboardPage';
+import UploadPage from './pages/UploadPage';
 
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
@@ -66,7 +67,7 @@ export default function App() {
               }
             />
             
-            {/* <Route
+            <Route
               path="upload"
               element={
                 <ProtectedRoute>
@@ -75,7 +76,7 @@ export default function App() {
               }
             />
             
-            <Route
+            {/* <Route
               path="profile"
               element={
                 <ProtectedRoute>
@@ -90,8 +91,8 @@ export default function App() {
                 <ProtectedRoute requireAdmin>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } */}
-            />
+              }
+            /> */}
           </Route>
         </Routes>
       </BrowserRouter>
