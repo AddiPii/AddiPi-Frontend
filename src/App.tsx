@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
+import ProfilePage from './pages/ProfilePage';
 
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
@@ -76,7 +77,7 @@ export default function App() {
               }
             />
             
-            {/* <Route
+            <Route
               path="profile"
               element={
                 <ProtectedRoute>
@@ -85,7 +86,7 @@ export default function App() {
               }
             />
             
-            <Route
+            {/* <Route
               path="admin"
               element={
                 <ProtectedRoute requireAdmin>
