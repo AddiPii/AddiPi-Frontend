@@ -1,4 +1,3 @@
-// src/components/Layout.tsx
 import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Printer, Home, Upload, LayoutDashboard, Shield, User, LogOut } from 'lucide-react';
