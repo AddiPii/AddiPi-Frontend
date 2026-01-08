@@ -72,7 +72,9 @@ class ApiClient {
     if (refreshToken) {
       try {
         await this.authClient.post('/auth/logout', { refreshToken });
-      } catch {}
+      } catch(e) {
+        console.log('error: ', e)
+      }
     }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
