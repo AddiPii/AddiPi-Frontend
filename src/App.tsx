@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
@@ -51,8 +52,8 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="login" element={<LoginPage />} />
-            {/* <Route path="register" element={<RegisterPage />} />
-            <Route path="verify-email" element={<VerifyEmailPage />} /> */}
+            <Route path="register" element={<RegisterPage />} />
+            {/* <Route path="verify-email" element={<VerifyEmailPage />} /> */}
             
             {/* <Route
               path="dashboard"
