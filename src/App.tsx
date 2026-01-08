@@ -5,6 +5,8 @@ import { useStore } from './store/useStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
   const { isAuthenticated, user } = useStore();
@@ -48,8 +50,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
-            {/* <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
+            <Route path="login" element={<LoginPage />} />
+            {/* <Route path="register" element={<RegisterPage />} />
             <Route path="verify-email" element={<VerifyEmailPage />} /> */}
             
             {/* <Route
