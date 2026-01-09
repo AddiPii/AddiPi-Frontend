@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { api } from '../services/api.js';
+import { api } from '../services/api';
+import { useStore } from '../store/useStore';
+import toast from 'react-hot-toast';
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const navigate = useNavigate();
+  const { setUser } = useStore();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -20,10 +23,26 @@ export default function VerifyEmailPage() {
 
   const verifyEmail = async (token: string) => {
     try {
-      await api.verifyEmail(token);
-      setStatus('success');
-      setTimeout(() => navigate('/login'), 3000);
+      const response = await api.verifyEmail(token);
+      
+      const data = response.data;
+      
+      if (data?.accessToken && data?.refreshToken && data?.user) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setUser(data.user);
+        
+        setStatus('success');
+        toast.success('Email zweryfikowany! Logowanie...');
+        
+        setTimeout(() => navigate('/dashboard'), 2000);
+      } else {
+        setStatus('success');
+        toast.success('Email zweryfikowany! Możesz się teraz zalogować.');
+        setTimeout(() => navigate('/login'), 3000);
+      }
     } catch (error) {
+      console.error('Verification error:', error);
       setStatus('error');
     }
   };
@@ -41,7 +60,11 @@ export default function VerifyEmailPage() {
           <>
             <CheckCircle className="mx-auto text-green-600 mb-4" size={64} />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Email zweryfikowany!</h2>
-            <p className="text-gray-600">Przekierowywanie do logowania...</p>
+            <p className="text-gray-600">
+              {localStorage.getItem('accessToken') 
+                ? 'Logowanie i przekierowywanie do dashboardu...' 
+                : 'Przekierowywanie do logowania...'}
+            </p>
           </>
         )}
         {status === 'error' && (

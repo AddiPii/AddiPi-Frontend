@@ -16,8 +16,9 @@ export default function LoginPage() {
       await login(email, password);
       toast.success('Zalogowano pomyślnie!');
       navigate('/dashboard');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Nieprawidłowe dane logowania');
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      toast.error(err.response?.data?.error || 'Nieprawidłowe dane logowania');
     }
   };
 
