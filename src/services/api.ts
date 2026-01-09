@@ -4,12 +4,17 @@ import type {
   FileUploadResponse, AuthResponse, LoginCredentials, RegisterData 
 } from '../types';
 
-const API_BASE = 'http://localhost';
+// const API_BASE = 'http://localhost';
 
-const AUTH_URL = `${API_BASE}:3001`;
-const USER_URL = `${API_BASE}:3002`;
-const PRINTER_URL = `${API_BASE}:3050`;
-const FILES_URL = `${API_BASE}:5000`;
+// const AUTH_URL = `${API_BASE}:3001`;
+// const USER_URL = `${API_BASE}:3002`;
+// const PRINTER_URL = `${API_BASE}:3050`;
+// const FILES_URL = `${API_BASE}:5000`;
+
+const AUTH_URL = `https://addipi-auth-service.vercel.app`;
+const USER_URL = `https://addipi-user-service.vercel.app`;
+const PRINTER_URL = `https://addipi-printer-service.vercel.app`;
+const FILES_URL = `https://addipi-files-service.vercel.app`;
 
 class ApiClient {
   private authClient: AxiosInstance;
