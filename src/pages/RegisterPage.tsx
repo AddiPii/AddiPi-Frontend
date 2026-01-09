@@ -30,7 +30,9 @@ export default function RegisterPage() {
         lastName: formData.lastName,
       });
       toast.success('Konto utworzone! Sprawdź swoją skrzynkę email.');
-      navigate('/login');
+      setTimeout(() => {
+        navigate('/login')
+      }, 5000)
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Nie udało się utworzyć konta');
     }
