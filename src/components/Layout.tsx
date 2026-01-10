@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Printer, Home, Upload, LayoutDashboard, Shield, User, LogOut } from 'lucide-react';
+import { Menu, X, Printer, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { ConnectionStatus } from './ConnectionStatus';
 import toast from 'react-hot-toast';
@@ -26,6 +26,7 @@ export default function Layout() {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', auth: true },
     { icon: Upload, label: 'Upload & Print', path: '/upload', auth: true },
     { icon: User, label: 'Profil', path: '/profile', auth: true },
+    { icon: Gauge, label: 'Kontrola Druku', path: '/print', auth: false},
     { icon: Shield, label: 'Panel Admina', path: '/admin', auth: true, admin: true },
   ];
 

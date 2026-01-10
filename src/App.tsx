@@ -89,7 +89,7 @@ export default function App() {
             />
 
             <Route
-              path="print/:jobId"
+              path="print"
               element={
                 <ProtectedRoute>
                   <PrintControlPage />
