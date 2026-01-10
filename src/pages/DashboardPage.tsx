@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Square, RefreshCw, Calendar, FileText } from 'lucide-react';
+import { Square, RefreshCw, Calendar, FileText, Eye } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
+import { useNavigate } from 'react-router-dom';
 import type { Job, UserStats } from '../types';
 import toast from 'react-hot-toast';
 import { formatDateSafe, formatDateTimeSafe } from '../utils/formatters';
@@ -16,6 +17,7 @@ interface ApiError {
 
 export default function DashboardPage() {
   const { user, currentJob, fetchCurrentJob } = useStore();
+  const navigate = useNavigate();
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -57,7 +59,7 @@ export default function DashboardPage() {
     );
   }
 
-  async function loadMyJobs () {
+  const loadMyJobs = async () => {
     try {
       const params = selectedStatus !== 'all' ? { status: selectedStatus, limit: 50 } : { limit: 50 };
       const { data } = await api.getUserJobs(params);
@@ -69,7 +71,7 @@ export default function DashboardPage() {
     }
   };
 
-  async function loadStats() {
+  const loadStats = async () => {
     try {
       const { data } = await api.getUserStats();
       setStats(data);
@@ -196,6 +198,14 @@ export default function DashboardPage() {
               <Square size={18} className="inline mr-2" />
               Zatrzymaj druk
             </button>
+            
+            <button
+              onClick={() => navigate(`/print/${currentJob.id}`)}
+              className="mt-2 w-full bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
+            >
+              <Eye size={18} className="inline mr-2" />
+              Kontrola druku
+            </button>
           </div>
         </div>
       )}
@@ -256,6 +266,15 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex space-x-2 ml-4">
+                    {job.status === 'printing' && (
+                      <button
+                        onClick={() => navigate(`/print/${job.id}`)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        title="Kontrola druku"
+                      >
+                        <Eye size={18} />
+                      </button>
+                    )}
                     {(job.status === 'failed' || job.status === 'cancelled') && (
                       <button
                         onClick={() => handleRetryJob(job.id)}

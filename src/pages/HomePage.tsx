@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Printer, Activity, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Printer, Activity, CheckCircle, XCircle, Clock, TrendingUp, Eye } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { api } from '../services/api';
 import type { Job } from '../types';
 import { formatDateSafe, formatDateTimeSafe } from '../utils/formatters';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const { printerStatus, metrics, currentJob, fetchCurrentJob } = useStore();
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   const [upcomingJobs, setUpcomingJobs] = useState<Job[]>([]);
@@ -119,6 +121,13 @@ export default function HomePage() {
                       Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min
                     </p>
                   )}
+                  <button
+                    onClick={() => navigate(`/print/${currentJob.id}`)}
+                    className="mt-3 w-full px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center justify-center"
+                  >
+                    <Eye size={18} className="mr-2" />
+                    Zobacz szczegóły
+                  </button>
                 </>
               ) : (
                 <p className="text-gray-500">Brak aktywnego druku</p>
