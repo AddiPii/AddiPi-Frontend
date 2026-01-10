@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Square, Play, RefreshCw, Clock, TrendingUp, AlertCircle, CheckCircle, XCircle, Camera, Eye } from 'lucide-react';
+import { Square, Play, Clock, TrendingUp, AlertCircle, CheckCircle, XCircle, Camera, Eye } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import type { Job } from '../types';
