@@ -50,7 +50,7 @@ export default function PrintControlPage() {
         setDisplayJob(currentJob);
       } else {
         // Otherwise, fetch the most recent job
-        const { data } = await api.getUserJobs({ limit: 1, sort: '-createdAt' });
+        const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
         if (data.jobs.length > 0) {
           setDisplayJob(data.jobs[0]);
         } else {
