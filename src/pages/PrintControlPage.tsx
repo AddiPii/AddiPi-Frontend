@@ -15,7 +15,7 @@ interface ApiError {
 }
 
 export default function PrintControlPage() {
-  const { user, currentJob, fetchCurrentJob } = useStore();
+  const { printerStatus, user, currentJob, fetchCurrentJob } = useStore();
   const [displayJob, setDisplayJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -314,7 +314,9 @@ export default function PrintControlPage() {
           {canViewJob() && (
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Panel kontroli</h3>
-              
+              <p className="mt-8 mb-2">temperatura podłoża: {printerStatus?.temperature?.bed} °C</p>
+              <p className="mb-7 mt-3">temperatura dyszy: {printerStatus?.temperature?.nozzle} °C</p>
+              <p></p>
               {hasControlAccess ? (
                 <div className="space-y-3">
                   {canCancel && (
