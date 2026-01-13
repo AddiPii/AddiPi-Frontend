@@ -122,7 +122,7 @@ export default function HomePage() {
                     </p>
                   )}
                   <button
-                    onClick={() => navigate(`/print/${currentJob.id}`)}
+                    onClick={() => navigate(`/print`)}
                     className="mt-3 w-full px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center justify-center"
                   >
                     <Eye size={18} className="mr-2" />
