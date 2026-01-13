@@ -13,6 +13,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import VerifyEmailInfoPage from './pages/VerifyEmailInfoPage';
+import PrintControlPage from './pages/PrintControlPage';
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
   const { isAuthenticated, user } = useStore();
@@ -83,6 +84,15 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="print"
+              element={
+                <ProtectedRoute>
+                  <PrintControlPage />
                 </ProtectedRoute>
               }
             />
