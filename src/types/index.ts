@@ -32,8 +32,11 @@ export interface Job {
 
 export interface PrinterStatus {
   deviceId: string;
-  state: 'idle' | 'printing' | 'offline';
+  printerState: 'Operational' | 'idle' | 'printing' | 'offline';
   progress?: number;
+  isPrinting?: boolean;
+  currentJobId?: string;
+  currentFileId?:string;
   currentJob?: string;
   temperature?: {
     nozzle: number;

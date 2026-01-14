@@ -15,7 +15,9 @@ interface ApiError {
 }
 
 export default function PrintControlPage() {
-  const { user, currentJob, fetchCurrentJob } = useStore();
+  const [cameraUrl, setCameraUrl] = useState<string | null>(null)
+  const [cameraError, setCameraError] = useState(false);
+  const { printerStatus, user, currentJob, fetchCurrentJob } = useStore();
   const [displayJob, setDisplayJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -33,7 +35,15 @@ export default function PrintControlPage() {
 
   useEffect(() => {
     loadJobData();
-
+    try{
+      fetch('https://addipi-video-service.vercel.app/camera-url')
+        .then(res => res.json())
+        .then(data => setCameraUrl(`${data.url}/webcam/?action=stream`))
+    }
+    catch{
+      setCameraUrl('')
+    }
+    
     const interval = setInterval(() => {
       loadJobData();
     }, 5000);
@@ -293,16 +303,26 @@ export default function PrintControlPage() {
                 Podgląd z kamery
               </h3>
               <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                Wkrótce
+                {cameraUrl ? ('Online') : ('Offline')}
               </span>
             </div>
             <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <Camera className="mx-auto text-gray-400 mb-3" size={48} />
-                <p className="text-gray-600 font-medium">Kamera nie jest jeszcze dostępna</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Ta funkcja będzie dostępna w przyszłych aktualizacjach
-                </p>
+                {cameraUrl && !cameraError ? (
+                <img
+                  src={`${cameraUrl}/?action=stream`}
+                  className="w-full h-full object-cover"
+                  onError={() => setCameraError(true)}
+                />
+              ) : (
+                <div>
+                  <Camera className="mx-auto text-gray-400 mb-3" size={48} />
+                  <p className="text-gray-600 font-medium">Kamera offline</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Drukarka jest offline lub kamera została wyłączona
+                  </p>
+                </div>
+              )}
               </div>
             </div>
           </div>
@@ -314,7 +334,9 @@ export default function PrintControlPage() {
           {canViewJob() && (
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Panel kontroli</h3>
-              
+              <p className="mt-8 mb-2">temperatura podłoża: {printerStatus?.temperature?.bed} °C</p>
+              <p className="mb-7 mt-3">temperatura dyszy: {printerStatus?.temperature?.nozzle} °C</p>
+              <p></p>
               {hasControlAccess ? (
                 <div className="space-y-3">
                   {canCancel && (

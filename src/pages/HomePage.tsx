@@ -56,10 +56,20 @@ export default function HomePage() {
 
   const getStatusColor = (state?: string) => {
     switch (state) {
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'idle': return 'bg-green-100 text-green-800';
-      case 'offline': return 'bg-gray-100 text-gray-800';
+      case 'Operational': return 'bg-green-100 text-green-800';
+      case 'Printing': return 'bg-blue-100 text-blue-800';
+      case 'Offline': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (state?: string, isPrinting?: boolean) => {
+    if (isPrinting) return 'Drukuje';
+    switch (state) {
+      case 'Operational': return 'Bezczynna';
+      case 'Printing': return 'Drukuje';
+      case 'Offline': return 'Offline';
+      default: return 'Offline';
     }
   };
 
@@ -91,9 +101,8 @@ export default function HomePage() {
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Status drukarki</h2>
-          <span className={`px-4 py-2 rounded-full font-medium ${getStatusColor(printerStatus?.state)}`}>
-            {printerStatus?.state === 'printing' ? 'Drukuje' : 
-             printerStatus?.state === 'idle' ? 'Bezczynna' : 'Offline'}
+          <span className={`px-4 py-2 rounded-full font-medium ${getStatusColor(printerStatus?.printerState)}`}>
+            {getStatusText(printerStatus?.printerState, printerStatus?.isPrinting)}
           </span>
         </div>
 
