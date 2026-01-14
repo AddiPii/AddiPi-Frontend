@@ -165,6 +165,38 @@ export default function PrintControlPage() {
             Prześlij plik
           </a>
         </div>
+        <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                <Camera className="mr-2 text-blue-600" size={24} />
+                Podgląd z kamery
+              </h3>
+              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                {cameraUrl ? ('Online') : ('Offline')}
+              </span>
+            </div>
+            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <p className="mt-8 mb-2">temperatura podłoża: {printerStatus?.temperature?.bed} °C</p>
+                <p className="mb-7 mt-3">temperatura dyszy: {printerStatus?.temperature?.nozzle} °C</p>
+                {cameraUrl && !cameraError ? (
+                <img
+                  src={`${cameraUrl}/?action=stream`}
+                  className="w-full h-full object-cover"
+                  onError={() => setCameraError(true)}
+                />
+              ) : (
+                <div>
+                  <Camera className="mx-auto text-gray-400 mb-3" size={48} />
+                  <p className="text-gray-600 font-medium">Kamera offline</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Drukarka jest offline lub kamera została wyłączona
+                  </p>
+                </div>
+              )}
+              </div>
+            </div>
+          </div>
       </div>
     );
   }
