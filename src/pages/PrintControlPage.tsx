@@ -366,8 +366,8 @@ export default function PrintControlPage() {
           {canViewJob() && (
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Panel kontroli</h3>
-              <p className="mt-8 mb-2">temperatura podłoża: {(printerStatus?.temperature?.bed ? printerStatus?.temperature?.bed + '°C' : "nieznana")}</p>
-              <p className="mb-7 mt-3">temperatura dyszy: {(printerStatus?.temperature?.nozzle ? printerStatus?.temperature?.nozzle + '°C' : "nieznana")} </p>
+              <p className="mt-8 mb-2">temperatura podłoża: {( printerStatus?.temperature?.bed ? printerStatus?.temperature?.bed + ' °C' : "nieznana" )}</p>
+              <p className="mb-7 mt-3">temperatura dyszy: {( printerStatus?.temperature?.nozzle ? printerStatus?.temperature?.nozzle + ' °C' : "nieznana" )} </p>
               <p></p>
               {hasControlAccess ? (
                 <div className="space-y-3">
