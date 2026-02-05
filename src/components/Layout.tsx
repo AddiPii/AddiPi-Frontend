@@ -53,11 +53,11 @@ export default function Layout() {
                 </button>
               )}
               
-              <Link to="/" className="flex items-center group ml-[-20px]">
+              <Link to="/" className="flex items-center group ml-[-12px]">
                 <div className="relative">
-                  <div className="absolute inset-4 bg-primary/10 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
+                  <div className="absolute inset-3 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
                   {/* <Printer className="relative h-8 w-8 text-primary" /> */}
-                  <img src="images/logo-transparent.png" className='relative h-20 w-20' alt="" />
+                  <img src="images/logo-transparent.png" className='relative w-16' alt="" />
                 </div>
                 <span className="ml-0 text-xl font-semibold text-foreground tracking-tight">
                   AddiPi
@@ -168,6 +168,64 @@ export default function Layout() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Outlet />
       </main>
+
+      <footer className="bg-card/80 backdrop-blur-xl border-t border-border mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-3">
+              <div className="flex items-center gap-1">
+                <img src="images/logo-transparent.png" className="w-10 ml-[-10px]" alt="AddiPi" />
+                <span className="text-lg font-semibold text-foreground">AddiPi</span>
+              </div>
+              <p className="text-sm text-muted-foreground pr-40">
+                System zarządzania drukarką 3D. Monitoruj i kontroluj druk w czasie rzeczywistym.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-foreground">Linki</p>
+              <div className="grid gap-2 text-sm">
+                <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">Strona glowna</Link>
+                <Link to="/upload" className="text-muted-foreground hover:text-foreground transition-colors">Upload & Print</Link>
+                <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+                <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profil</Link>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-foreground">Kontakt</p>
+              <div className="grid gap-2 text-sm">
+                <a
+                  href="mailto:addipiservice@gmail.com"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  addipiservice@gmail.com
+                </a>
+                <a
+                  href="https://github.com/AddiPii"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/ovez/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Oliwer Urbaniak. Wszelkie prawa zastrzezone.
+          </div>
+        </div>
+      </footer>
 
       {/* Connection Status Indicator */}
       <ConnectionStatus />
