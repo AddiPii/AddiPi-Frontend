@@ -94,6 +94,7 @@ export default function HomePage() {
             <p className="text-blue-100 text-lg">System zarządzania drukarką 3D</p>
           </div>
           <Printer size={64} className="opacity-80" />
+          {/* <img src='images/logo.png' width={80} className='opacity-80 ' /> */}
         </div>
       </div>
 
