@@ -1,75 +1,91 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, Mail, Lock, Printer } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, isLoading } = useStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { login, isLoading } = useStore();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!formData.email || !formData.password) {
+      setError(t('login.errorFillFields'));
+      return;
+    }
+
     try {
-      await login(email, password);
-      toast.success('Zalogowano pomyślnie!');
+      await login(formData.email, formData.password);
+      toast.success(t('auth.loginSuccess'));
       navigate('/dashboard');
-    } catch (error) {
-      const err = error as { response?: { data?: { error?: string } } };
-      toast.error(err.response?.data?.error || 'Nieprawidłowe dane logowania');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || t('auth.loginError');
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Card */}
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl shadow-black/5">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20 mb-4">
-              <LogIn className="text-primary" size={28} />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground">Zaloguj się</h2>
-            <p className="text-muted-foreground mt-2">Witaj ponownie w AddiPi</p>
-          </div>
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground">{t('login.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('login.subtitle')}</p>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor='email' className="block text-sm font-medium text-foreground">
-                Email
+        <div className="bg-card rounded-xl border border-border p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <AlertCircle className="text-destructive flex-shrink-0" size={20} />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {t('profile.email')}
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="text-muted-foreground" size={20} />
+                </div>
                 <input
-                  id='email'
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  placeholder={t('login.emailPlaceholder')}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                  placeholder="twoj@email.uwr.edu.pl"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor='password' className="block text-sm font-medium text-foreground">
-                Hasło
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {t('login.password')}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="text-muted-foreground" size={20} />
+                </div>
                 <input
-                  id='password'
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  placeholder={t('login.passwordPlaceholder')}
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -77,34 +93,30 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Logowanie...
+                  {t('login.loggingIn')}
                 </>
               ) : (
-                'Zaloguj się'
+                <>
+                  <LogIn size={18} />
+                  {t('nav.login')}
+                </>
               )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-border">
-            <p className="text-center text-sm text-muted-foreground">
-              Nie masz konta?{' '}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              {t('login.noAccount')}{' '}
               <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
-                Zarejestruj się
+                {t('login.registerHere')}
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Branding */}
-        <div className="flex items-center justify-center gap-2 mt-10 text-muted-foreground">
-          <Printer size={16} />
-          <span className="text-sm">AddiPi 3D Printer System</span>
         </div>
       </div>
     </div>

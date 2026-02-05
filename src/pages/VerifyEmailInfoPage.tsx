@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Mail, CheckCircle, RefreshCw, Printer, ArrowLeft } from 'lucide-react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function VerifyEmailInfoPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const email = location.state?.email || '';
   const [resending, setResending] = useState(false);
@@ -12,7 +14,7 @@ export default function VerifyEmailInfoPage() {
 
   const handleResendEmail = async () => {
     if (!email) {
-      toast.error('Brak adresu email');
+      toast.error(t('verifyInfo.noEmail'));
       return;
     }
 
@@ -20,9 +22,9 @@ export default function VerifyEmailInfoPage() {
     try {
       await api.resendVerification(email);
       setResent(true);
-      toast.success('Email weryfikacyjny został wysłany ponownie!');
+      toast.success(t('verifyInfo.resentSuccess'));
     } catch {
-      toast.error('Nie udało się wysłać emaila');
+      toast.error(t('verifyInfo.resentError'));
     } finally {
       setResending(false);
     }
@@ -39,11 +41,11 @@ export default function VerifyEmailInfoPage() {
             </div>
             
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              Sprawdź swoją skrzynkę email
+              {t('verifyInfo.title')}
             </h2>
             
             <p className="text-muted-foreground mb-6">
-              Wysłaliśmy link weryfikacyjny na adres:
+              {t('verifyInfo.sentTo')}
             </p>
             
             {/* Email Badge */}
@@ -58,7 +60,7 @@ export default function VerifyEmailInfoPage() {
                   <CheckCircle className="text-primary" size={16} />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Kliknij link w emailu, aby zweryfikować swoje konto
+                  {t('verifyInfo.step1')}
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -66,7 +68,7 @@ export default function VerifyEmailInfoPage() {
                   <CheckCircle className="text-primary" size={16} />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Po weryfikacji możesz się zalogować
+                  {t('verifyInfo.step2')}
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -74,13 +76,13 @@ export default function VerifyEmailInfoPage() {
                   <CheckCircle className="text-primary" size={16} />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Link jest ważny przez 24 godziny
+                  {t('verifyInfo.step3')}
                 </p>
               </div>
             </div>
 
             <p className="text-sm text-muted-foreground mb-6">
-              Nie otrzymałeś emaila? Sprawdź folder SPAM lub kliknij poniżej.
+              {t('verifyInfo.notReceived')}
             </p>
 
             {/* Resend Button */}
@@ -93,12 +95,12 @@ export default function VerifyEmailInfoPage() {
                 {resending ? (
                   <>
                     <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Wysyłanie...
+                    {t('verifyInfo.sending')}
                   </>
                 ) : (
                   <>
                     <RefreshCw size={18} />
-                    Wyślij ponownie
+                    {t('verifyInfo.resend')}
                   </>
                 )}
               </button>
@@ -106,7 +108,7 @@ export default function VerifyEmailInfoPage() {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
                 <p className="text-primary text-sm font-medium flex items-center justify-center gap-2">
                   <CheckCircle size={16} />
-                  Email został wysłany ponownie!
+                  {t('verifyInfo.emailResent')}
                 </p>
               </div>
             )}
@@ -117,7 +119,7 @@ export default function VerifyEmailInfoPage() {
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={16} />
-              Powrót do logowania
+              {t('verifyInfo.backToLogin')}
             </Link>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Activity, CheckCircle, XCircle, Clock, TrendingUp, Eye, Zap, ArrowRight, Layers } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { api } from '../services/api';
@@ -7,6 +8,7 @@ import type { Job } from '../types';
 import { formatDateSafe, formatDateTimeSafe } from '../utils/formatters';
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { printerStatus, metrics, currentJob, fetchCurrentJob } = useStore();
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
@@ -52,15 +54,15 @@ export default function HomePage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchCurrentJob]);
 
   const getStatusIndicator = (state?: string, isPrinting?: boolean) => {
-    if (isPrinting) return { color: 'bg-primary', pulse: true, text: 'Drukuje' };
+    if (isPrinting) return { color: 'bg-primary', pulse: true, text: t('home.status.printing') };
     switch (state) {
-      case 'Operational': return { color: 'bg-primary', pulse: false, text: 'Gotowa' };
-      case 'Printing': return { color: 'bg-primary', pulse: true, text: 'Drukuje' };
-      case 'Offline': return { color: 'bg-muted-foreground', pulse: false, text: 'Offline' };
-      default: return { color: 'bg-muted-foreground', pulse: false, text: 'Offline' };
+      case 'Operational': return { color: 'bg-primary', pulse: false, text: t('home.status.ready') };
+      case 'Printing': return { color: 'bg-primary', pulse: true, text: t('home.status.printing') };
+      case 'Offline': return { color: 'bg-muted-foreground', pulse: false, text: t('home.status.offline') };
+      default: return { color: 'bg-muted-foreground', pulse: false, text: t('home.status.offline') };
     }
   };
 
@@ -94,20 +96,20 @@ export default function HomePage() {
             </div>
             
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight text-balance">
-              AddiPi 3D Printer
+              {t('home.title')}
             </h1>
             
             {/* Mobile */}
             <div className="flex lg:hidden flex-col items-center gap-4 text-center">
               <img src="images/logo.png" alt="AddiPi Logo" className="w-60 mt-2 mb-2 rounded-xl border border-border object-cover" />
               <p className="text-lg text-muted-foreground text-pretty">
-                Zaawansowany system zarządzania drukarką 3D. Monitoruj, kontroluj i optymalizuj swoje druki w czasie rzeczywistym.
+                {t('home.subtitle')}
               </p>
             </div>
             
             {/* Desktop */}
             <p className="hidden lg:block text-lg text-muted-foreground max-w-xl text-pretty">
-              Zaawansowany system zarządzania drukarką 3D. Monitoruj, kontroluj i optymalizuj swoje druki w czasie rzeczywistym.
+              {t('home.subtitle')}
             </p>
             
             <div className="flex flex-wrap items-center gap-3 pt-2 justify-center lg:justify-start">
@@ -116,14 +118,14 @@ export default function HomePage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
               >
                 <Zap size={18} />
-                Rozpocznij druk
+                {t('home.startPrint')}
               </button>
               <button
                 onClick={() => navigate('/print')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-secondary text-foreground font-medium rounded-lg border border-border hover:bg-secondary/80 transition-colors"
               >
                 <Eye size={18} />
-                Podgląd na żywo
+                {t('home.livePreview')}
               </button>
             </div>
           </div>
@@ -132,7 +134,6 @@ export default function HomePage() {
           <div className="relative hidden lg:block">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
             <div className="relative p-0.2 bg-secondary/50 rounded-2xl border border-border">
-              {/* <Printer size={80} className="text-primary" /> */}
               <img src="images/logo.png" alt="" className='border rounded-2xl w-60'/>
             </div>
           </div>
@@ -149,8 +150,8 @@ export default function HomePage() {
                 <Activity className="text-primary" size={20} />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Aktualny druk</h3>
-                <p className="text-sm text-muted-foreground">Status w czasie rzeczywistym</p>
+                <h3 className="font-semibold text-foreground">{t('home.currentPrint')}</h3>
+                <p className="text-sm text-muted-foreground">{t('home.realTimeStatus')}</p>
               </div>
             </div>
             {currentJob && (
@@ -158,7 +159,7 @@ export default function HomePage() {
                 onClick={() => navigate('/print')}
                 className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
               >
-                Szczegóły
+                {t('home.details')}
                 <ArrowRight size={16} />
               </button>
             )}
@@ -187,7 +188,7 @@ export default function HomePage() {
               {currentJob.printTimeLeft && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock size={14} />
-                  <span>Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min</span>
+                  <span>{t('home.timeRemaining')}: {Math.round(currentJob.printTimeLeft / 60)} {t('home.min')}</span>
                 </div>
               )}
             </div>
@@ -196,12 +197,12 @@ export default function HomePage() {
               <div className="p-4 bg-secondary/50 rounded-full mb-4">
                 <Layers size={32} className="text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground">Brak aktywnego druku</p>
+              <p className="text-muted-foreground">{t('home.noActivePrint')}</p>
               <button
                 onClick={() => navigate('/upload')}
                 className="mt-4 text-sm text-primary hover:text-primary/80 transition-colors"
               >
-                Rozpocznij nowy druk
+                {t('home.startNewPrint')}
               </button>
             </div>
           )}
@@ -214,14 +215,14 @@ export default function HomePage() {
               <CheckCircle className="text-primary" size={20} />
             </div>
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Ukończone
+              {t('home.stats.completed')}
             </span>
           </div>
           <div className="mt-6">
             <p className="text-4xl font-bold text-foreground tabular-nums">
               {metrics?.metrics.completed || 0}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">Druki zakończone sukcesem</p>
+            <p className="text-sm text-muted-foreground mt-1">{t('home.completedSuccess')}</p>
           </div>
         </div>
       </div>
@@ -230,25 +231,25 @@ export default function HomePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={TrendingUp}
-          label="Drukuje"
+          label={t('home.stats.printing')}
           value={metrics?.metrics.printing || 0}
           color="primary"
         />
         <StatCard
           icon={Clock}
-          label="W kolejce"
+          label={t('home.stats.queued')}
           value={(metrics?.metrics.queued || 0) + (metrics?.metrics.printing || 0)}
           color="yellow"
         />
         <StatCard
           icon={XCircle}
-          label="Niepowodzenia"
+          label={t('home.stats.failed')}
           value={metrics?.metrics.failed || 0}
           color="destructive"
         />
         <StatCard
           icon={Activity}
-          label="Wszystkie"
+          label={t('home.stats.all')}
           value={metrics?.metrics.total || 0}
           color="muted"
         />
@@ -259,8 +260,8 @@ export default function HomePage() {
         {/* Recent Jobs */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-6 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">Ostatnie druki</h2>
-            <p className="text-sm text-muted-foreground">Historia ukończonych zadań</p>
+            <h2 className="text-lg font-semibold text-foreground">{t('home.recentPrints')}</h2>
+            <p className="text-sm text-muted-foreground">{t('home.printHistory')}</p>
           </div>
           
           <div className="divide-y divide-border">
@@ -287,7 +288,7 @@ export default function HomePage() {
               ))
             ) : (
               <div className="px-6 py-12 text-center">
-                <p className="text-muted-foreground">Brak ostatnich druków</p>
+                <p className="text-muted-foreground">{t('home.noPrints')}</p>
               </div>
             )}
           </div>
@@ -296,8 +297,8 @@ export default function HomePage() {
         {/* Upcoming Jobs */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-6 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground">Nadchodzące druki</h2>
-            <p className="text-sm text-muted-foreground">Zaplanowane zadania</p>
+            <h2 className="text-lg font-semibold text-foreground">{t('home.upcomingPrints')}</h2>
+            <p className="text-sm text-muted-foreground">{t('home.scheduledTasks')}</p>
           </div>
           
           <div className="divide-y divide-border">
@@ -324,7 +325,7 @@ export default function HomePage() {
               ))
             ) : (
               <div className="px-6 py-12 text-center">
-                <p className="text-muted-foreground">Brak zaplanowanych druków</p>
+                <p className="text-muted-foreground">{t('home.noUpcoming')}</p>
               </div>
             )}
           </div>

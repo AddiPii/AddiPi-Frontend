@@ -30,13 +30,22 @@ function ProtectedRoute({ children, requireAdmin = false }: { children: React.Re
 }
 
 export default function App() {
-  const { isAuthenticated, fetchCurrentUser, fetchPrinterStatus, fetchMetrics } = useStore();
+  const { isAuthenticated, theme, fetchCurrentUser, fetchPrinterStatus, fetchMetrics } = useStore();
+
+  // Initialize theme on mount and when it changes
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchCurrentUser();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchCurrentUser]);
 
   useEffect(() => {
     fetchPrinterStatus();

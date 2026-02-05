@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Square, RefreshCw, Calendar, FileText, Eye, ChevronDown, Layers } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
@@ -16,6 +17,7 @@ interface ApiError {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user, currentJob, fetchCurrentJob } = useStore();
   const navigate = useNavigate();
   const [myJobs, setMyJobs] = useState<Job[]>([]);
@@ -67,31 +69,31 @@ export default function DashboardPage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [selectedStatus]);
+  }, [selectedStatus, fetchCurrentJob]);
 
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Ładowanie danych...</p>
+          <p className="text-muted-foreground">{t('dashboard.loading')}</p>
         </div>
       </div>
     );
   }
 
   const handleCancelJob = async (jobId: string) => {
-    if (!window.confirm('Czy na pewno chcesz anulować ten druk?')) return;
+    if (!window.confirm(t('dashboard.confirmCancel'))) return;
 
     setLoading(true);
     try {
       await api.cancelJob(jobId);
-      toast.success('Druk został anulowany');
+      toast.success(t('dashboard.cancelSuccess'));
       loadMyJobs();
       fetchCurrentJob();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się anulować druku');
+      toast.error(err.response?.data?.error || t('dashboard.cancelError'));
     } finally {
       setLoading(false);
     }
@@ -101,11 +103,11 @@ export default function DashboardPage() {
     setLoading(true);
     try {
       await api.retryJob(jobId);
-      toast.success('Druk został ponownie dodany do kolejki');
+      toast.success(t('dashboard.retrySuccess'));
       loadMyJobs();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się ponowić druku');
+      toast.error(err.response?.data?.error || t('dashboard.retryError'));
     } finally {
       setLoading(false);
     }
@@ -124,13 +126,13 @@ export default function DashboardPage() {
   };
 
   const statusLabels: Record<string, string> = {
-    all: 'Wszystkie',
-    pending: 'Oczekujące',
-    scheduled: 'Zaplanowane',
-    printing: 'Drukuje',
-    completed: 'Ukończone',
-    failed: 'Nieudane',
-    cancelled: 'Anulowane'
+    all: t('dashboard.status.all'),
+    pending: t('dashboard.status.pending'),
+    scheduled: t('dashboard.status.scheduled'),
+    printing: t('dashboard.status.printing'),
+    completed: t('dashboard.status.completed'),
+    failed: t('dashboard.status.failed'),
+    cancelled: t('dashboard.status.cancelled')
   };
 
   return (
@@ -138,9 +140,9 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Mój Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Witaj, <span className="text-foreground font-medium">{user?.firstName}</span>!
+            {t('dashboard.welcome')}, <span className="text-foreground font-medium">{user?.firstName}</span>!
           </p>
         </div>
       </div>
@@ -148,11 +150,11 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <StatCard label="Wszystkie" value={stats.total} color="muted" />
-          <StatCard label="Oczekujące" value={stats.pending} color="yellow" />
-          <StatCard label="Zaplanowane" value={stats.scheduled} color="violet" />
-          <StatCard label="Ukończone" value={stats.completed} color="primary" />
-          <StatCard label="Nieudane" value={stats.failed} color="destructive" />
+          <StatCard label={t('home.stats.all')} value={stats.total} color="muted" />
+          <StatCard label={t('dashboard.status.pending')} value={stats.pending} color="yellow" />
+          <StatCard label={t('dashboard.status.scheduled')} value={stats.scheduled} color="violet" />
+          <StatCard label={t('dashboard.status.completed')} value={stats.completed} color="primary" />
+          <StatCard label={t('dashboard.status.failed')} value={stats.failed} color="destructive" />
         </div>
       )}
 
@@ -169,7 +171,7 @@ export default function DashboardPage() {
                   <Layers className="text-primary" size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Aktualny druk</h2>
+                  <h2 className="text-lg font-semibold text-foreground">{t('dashboard.currentPrint')}</h2>
                   <p className="text-sm text-muted-foreground">{currentJob.originalFileName}</p>
                 </div>
               </div>
@@ -187,8 +189,8 @@ export default function DashboardPage() {
             
             {currentJob.printTimeLeft && (
               <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Czas drukowania: {Math.round((currentJob.printTime || 0) / 60)} min</span>
-                <span>Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min</span>
+                <span>{t('home.printTime')}: {Math.round((currentJob.printTime || 0) / 60)} {t('home.min')}</span>
+                <span>{t('home.timeRemaining')}: {Math.round(currentJob.printTimeLeft / 60)} {t('home.min')}</span>
               </div>
             )}
             
@@ -199,14 +201,14 @@ export default function DashboardPage() {
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
               >
                 <Square size={18} />
-                Zatrzymaj druk
+                {t('dashboard.stopPrint')}
               </button>
               <button
                 onClick={() => navigate(`/print`)}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-foreground border border-border rounded-lg font-medium hover:bg-secondary/80 transition-colors"
               >
                 <Eye size={18} />
-                Kontrola druku
+                {t('dashboard.printControl')}
               </button>
             </div>
           </div>
@@ -217,8 +219,8 @@ export default function DashboardPage() {
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Moje druki</h2>
-            <p className="text-sm text-muted-foreground">Historia wszystkich zadań</p>
+            <h2 className="text-lg font-semibold text-foreground">{t('dashboard.myPrints')}</h2>
+            <p className="text-sm text-muted-foreground">{t('dashboard.allTasks')}</p>
           </div>
           <div className="relative">
             <select
@@ -255,11 +257,11 @@ export default function DashboardPage() {
                         {job.scheduledAt && (
                           <div className="flex items-center gap-2">
                             <Calendar size={14} />
-                            <span>Zaplanowano: {formatDateTimeSafe(job.scheduledAt)}</span>
+                            <span>{t('dashboard.scheduled')}: {formatDateTimeSafe(job.scheduledAt)}</span>
                           </div>
                         )}
                         {job.createdAt && (
-                          <p>Utworzono: {formatDateSafe(job.createdAt)}</p>
+                          <p>{t('dashboard.created')}: {formatDateSafe(job.createdAt)}</p>
                         )}
                         {job.progress !== undefined && job.status === 'printing' && (
                           <div className="mt-2 w-full max-w-xs">
@@ -272,7 +274,7 @@ export default function DashboardPage() {
                           </div>
                         )}
                         {job.failureReason && (
-                          <p className="text-destructive mt-1">Błąd: {job.failureReason}</p>
+                          <p className="text-destructive mt-1">{t('dashboard.error')}: {job.failureReason}</p>
                         )}
                       </div>
                     </div>
@@ -283,7 +285,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => navigate(`/print`)}
                         className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                        title="Kontrola druku"
+                        title={t('dashboard.printControl')}
                       >
                         <Eye size={18} />
                       </button>
@@ -293,7 +295,7 @@ export default function DashboardPage() {
                         onClick={() => handleRetryJob(job.id)}
                         disabled={loading}
                         className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
-                        title="Ponów"
+                        title={t('dashboard.retry')}
                       >
                         <RefreshCw size={18} />
                       </button>
@@ -303,7 +305,7 @@ export default function DashboardPage() {
                         onClick={() => handleCancelJob(job.id)}
                         disabled={loading}
                         className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
-                        title="Anuluj"
+                        title={t('common.cancel')}
                       >
                         <Square size={18} />
                       </button>
@@ -317,7 +319,7 @@ export default function DashboardPage() {
               <div className="p-4 bg-secondary/50 rounded-full w-fit mx-auto mb-4">
                 <FileText className="text-muted-foreground" size={32} />
               </div>
-              <p className="text-muted-foreground">Brak druków do wyświetlenia</p>
+              <p className="text-muted-foreground">{t('dashboard.noPrintsToDisplay')}</p>
             </div>
           )}
         </div>

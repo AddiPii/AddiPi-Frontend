@@ -3,31 +3,35 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge, ChevronRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { ConnectionStatus } from './ConnectionStatus';
+import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAuthenticated, user, logout } = useStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success('Wylogowano pomyślnie');
+      toast.success(t('auth.logoutSuccess'));
       navigate('/');
     } catch {
-      toast.error('Błąd podczas wylogowywania');
+      toast.error(t('auth.logoutError'));
     }
   };
 
   const menuItems = [
-    { icon: Home, label: 'Strona główna', path: '/', auth: false },
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', auth: true },
-    { icon: Upload, label: 'Upload & Print', path: '/upload', auth: true },
-    { icon: User, label: 'Profil', path: '/profile', auth: true },
-    { icon: Gauge, label: 'Kontrola Druku', path: '/print', auth: false },
-    { icon: Shield, label: 'Panel Admina', path: '/admin', auth: true, admin: true },
+    { icon: Home, label: t('nav.home'), path: '/', auth: false },
+    { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/dashboard', auth: true },
+    { icon: Upload, label: t('nav.upload'), path: '/upload', auth: true },
+    { icon: User, label: t('nav.profile'), path: '/profile', auth: true },
+    { icon: Gauge, label: t('nav.printControl'), path: '/print', auth: false },
+    { icon: Shield, label: t('nav.admin'), path: '/admin', auth: true, admin: true },
   ];
 
   const visibleMenuItems = menuItems.filter(item => {
@@ -56,8 +60,7 @@ export default function Layout() {
               <Link to="/" className="flex items-center group ml-[-12px]">
                 <div className="relative">
                   <div className="absolute inset-3 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
-                  {/* <Printer className="relative h-8 w-8 text-primary" /> */}
-                  <img src="images/logo-transparent.png" className='relative w-16' alt="" />
+                  <img src="images/logo-transparent.png" className='relative w-16' alt="AddiPi" />
                 </div>
                 <span className="ml-0 text-xl font-semibold text-foreground tracking-tight">
                   AddiPi
@@ -66,6 +69,9 @@ export default function Layout() {
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <LanguageToggle />
+              
               {isAuthenticated ? (
                 <>
                   <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 border border-border">
@@ -84,7 +90,7 @@ export default function Layout() {
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
                   >
                     <LogOut size={18} />
-                    <span className="hidden sm:inline">Wyloguj</span>
+                    <span className="hidden sm:inline">{t('nav.logout')}</span>
                   </button>
                 </>
               ) : (
@@ -93,13 +99,13 @@ export default function Layout() {
                     to="/login"
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
                   >
-                    Zaloguj
+                    {t('nav.login')}
                   </Link>
                   <Link
                     to="/register"
                     className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors"
                   >
-                    Zarejestruj
+                    {t('nav.register')}
                   </Link>
                 </>
               )}
@@ -117,7 +123,7 @@ export default function Layout() {
         >
           <div className="p-4">
             <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Nawigacja
+              {t('nav.navigation')}
             </p>
             <nav className="mt-2 space-y-1">
               {visibleMenuItems.map((item) => {
@@ -147,7 +153,7 @@ export default function Layout() {
           {/* Sidebar Footer */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
             <div className="px-4 py-3 rounded-lg bg-secondary/50 border border-border">
-              <p className="text-xs text-muted-foreground">Zalogowany jako</p>
+              <p className="text-xs text-muted-foreground">{t('nav.loggedInAs')}</p>
               <p className="text-sm font-medium text-foreground truncate">
                 {user?.email}
               </p>
@@ -178,22 +184,22 @@ export default function Layout() {
                 <span className="text-lg font-semibold text-foreground">AddiPi</span>
               </div>
               <p className="text-sm text-muted-foreground pr-40">
-                System zarządzania drukarką 3D. Monitoruj i kontroluj druk w czasie rzeczywistym.
+                {t('footer.description')}
               </p>
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm font-semibold text-foreground">Linki</p>
+              <p className="text-sm font-semibold text-foreground">{t('footer.links')}</p>
               <div className="grid gap-2 text-sm">
-                <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">Strona glowna</Link>
-                <Link to="/upload" className="text-muted-foreground hover:text-foreground transition-colors">Upload & Print</Link>
-                <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
-                <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profil</Link>
+                <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.home')}</Link>
+                <Link to="/upload" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.upload')}</Link>
+                <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.dashboard')}</Link>
+                <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.profile')}</Link>
               </div>
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm font-semibold text-foreground">Kontakt</p>
+              <p className="text-sm font-semibold text-foreground">{t('footer.contact')}</p>
               <div className="grid gap-2 text-sm">
                 <a
                   href="mailto:addipiservice@gmail.com"
@@ -222,7 +228,7 @@ export default function Layout() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-border text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Oliwer Urbaniak. Wszelkie prawa zastrzezone.
+            © {new Date().getFullYear()} Oliwer Urbaniak. {t('footer.rights')}.
           </div>
         </div>
       </footer>

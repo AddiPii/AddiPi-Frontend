@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, Upload, Calendar, AlertCircle, FileCode, Info } from 'lucide-react';
 import { api } from '../services/api.js';
 import toast from 'react-hot-toast';
 
 export default function UploadPage() {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [scheduledAt, setScheduledAt] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -31,13 +33,13 @@ export default function UploadPage() {
 
   const handleFileSelect = (selectedFile: File) => {
     if (!selectedFile.name.toLowerCase().endsWith('.gcode')) {
-      toast.error('Tylko pliki .gcode są akceptowane');
+      toast.error(t('upload.errorGcodeOnly'));
       return;
     }
 
     const maxSize = 50 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
-      toast.error('Plik jest za duży. Maksymalny rozmiar to 50MB');
+      toast.error(t('upload.errorFileSize'));
       return;
     }
 
@@ -52,7 +54,7 @@ export default function UploadPage() {
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error('Wybierz plik do przesłania');
+      toast.error(t('upload.errorSelectFile'));
       return;
     }
 
@@ -68,8 +70,8 @@ export default function UploadPage() {
       await api.uploadFile(file, scheduledDate);
       
       toast.success(scheduledAt 
-        ? 'Plik został przesłany i zaplanowany' 
-        : 'Plik został przesłany i dodany do kolejki'
+        ? t('upload.successScheduled')
+        : t('upload.successQueued')
       );
       
       setFile(null);
@@ -77,7 +79,7 @@ export default function UploadPage() {
     } catch (error: unknown) {
       console.error('Upload error:', error);
       const err = error as { response?: { data?: { error?: string } } };
-      toast.error(err.response?.data?.error || 'Nie udało się przesłać pliku');
+      toast.error(err.response?.data?.error || t('upload.errorUpload'));
     } finally {
       setUploading(false);
     }
@@ -101,8 +103,8 @@ export default function UploadPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Upload & Print</h1>
-        <p className="text-muted-foreground mt-2">Prześlij plik G-code do druku</p>
+        <h1 className="text-3xl font-bold text-foreground">{t('upload.title')}</h1>
+        <p className="text-muted-foreground mt-2">{t('upload.subtitle')}</p>
       </div>
 
       {/* Upload Area */}
@@ -133,7 +135,7 @@ export default function UploadPage() {
                 onClick={() => setFile(null)}
                 className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
-                Wybierz inny plik
+                {t('upload.selectAnother')}
               </button>
             </div>
           ) : (
@@ -143,13 +145,13 @@ export default function UploadPage() {
               </div>
               <div>
                 <p className="text-lg font-medium text-foreground">
-                  Przeciągnij i upuść plik G-code
+                  {t('upload.dragDrop')}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">lub</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('upload.or')}</p>
               </div>
               <label className="inline-block">
                 <span className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium cursor-pointer hover:bg-primary/90 transition-colors">
-                  Wybierz plik
+                  {t('upload.selectFile')}
                 </span>
                 <input
                   type="file"
@@ -158,7 +160,7 @@ export default function UploadPage() {
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-muted-foreground">Maksymalny rozmiar: 50MB</p>
+              <p className="text-xs text-muted-foreground">{t('upload.maxSize')}</p>
             </div>
           )}
         </div>
@@ -169,12 +171,12 @@ export default function UploadPage() {
             <div className="p-2 bg-secondary rounded-lg border border-border">
               <Calendar className="text-muted-foreground" size={18} />
             </div>
-            <h3 className="font-semibold text-foreground">Zaplanuj druk (opcjonalnie)</h3>
+            <h3 className="font-semibold text-foreground">{t('upload.schedulePrint')}</h3>
           </div>
           
           <div className="space-y-4">
             <label className="block">
-              <span className="text-sm text-foreground mb-2 block">Data i godzina rozpoczęcia</span>
+              <span className="text-sm text-foreground mb-2 block">{t('upload.startDateTime')}</span>
               <input
                 type="datetime-local"
                 value={scheduledAt}
@@ -186,9 +188,7 @@ export default function UploadPage() {
             
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
-              <p>
-                Jeśli nie wybierzesz daty, druk zostanie dodany do kolejki i rozpocznie się, gdy drukarka będzie wolna.
-              </p>
+              <p>{t('upload.scheduleNote')}</p>
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function UploadPage() {
             disabled={!file && !scheduledAt}
             className="px-6 py-2.5 text-foreground bg-secondary rounded-lg font-medium hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-border"
           >
-            Wyczyść
+            {t('upload.clear')}
           </button>
           <button
             onClick={handleUpload}
@@ -213,12 +213,12 @@ export default function UploadPage() {
             {uploading ? (
               <>
                 <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Przesyłanie...
+                {t('upload.uploading')}
               </>
             ) : (
               <>
                 <Upload size={18} />
-                {scheduledAt ? 'Zaplanuj druk' : 'Prześlij i drukuj'}
+                {scheduledAt ? t('upload.schedulePrintBtn') : t('upload.uploadAndPrint')}
               </>
             )}
           </button>
@@ -232,20 +232,20 @@ export default function UploadPage() {
             <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
               <FileCode className="text-primary" size={18} />
             </div>
-            <h3 className="font-semibold text-foreground">Akceptowane formaty</h3>
+            <h3 className="font-semibold text-foreground">{t('upload.acceptedFormats')}</h3>
           </div>
           <ul className="text-sm text-muted-foreground space-y-2">
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Pliki G-code (.gcode)
+              {t('upload.formats.gcode')}
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Maksymalny rozmiar: 50MB
+              {t('upload.formats.maxSize')}
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Kodowanie: UTF-8
+              {t('upload.formats.encoding')}
             </li>
           </ul>
         </div>
@@ -255,24 +255,24 @@ export default function UploadPage() {
             <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
               <Info className="text-primary" size={18} />
             </div>
-            <h3 className="font-semibold text-foreground">Jak to działa?</h3>
+            <h3 className="font-semibold text-foreground">{t('upload.howItWorks')}</h3>
           </div>
           <ul className="text-sm text-muted-foreground space-y-2">
             <li className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">1</span>
-              Wybierz plik G-code
+              {t('upload.steps.step1')}
             </li>
             <li className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">2</span>
-              Opcjonalnie zaplanuj czas druku
+              {t('upload.steps.step2')}
             </li>
             <li className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">3</span>
-              Kliknij "Prześlij i drukuj"
+              {t('upload.steps.step3')}
             </li>
             <li className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">4</span>
-              Śledź postęp w dashboardzie
+              {t('upload.steps.step4')}
             </li>
           </ul>
         </div>
