@@ -53,12 +53,13 @@ export default function Layout() {
                 </button>
               )}
               
-              <Link to="/" className="flex items-center group">
+              <Link to="/" className="flex items-center group ml-[-20px]">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
-                  <Printer className="relative h-8 w-8 text-primary" />
+                  <div className="absolute inset-4 bg-primary/10 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
+                  {/* <Printer className="relative h-8 w-8 text-primary" /> */}
+                  <img src="images/logo-transparent.png" className='relative h-20 w-20' alt="" />
                 </div>
-                <span className="ml-3 text-xl font-semibold text-foreground tracking-tight">
+                <span className="ml-0 text-xl font-semibold text-foreground tracking-tight">
                   AddiPi
                 </span>
               </Link>

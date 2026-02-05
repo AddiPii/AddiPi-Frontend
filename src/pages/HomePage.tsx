@@ -96,11 +96,21 @@ export default function HomePage() {
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight text-balance">
               AddiPi 3D Printer
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl text-pretty">
+            
+            {/* Mobile */}
+            <div className="flex lg:hidden flex-col items-center gap-4 text-center">
+              <img src="images/logo.png" alt="AddiPi Logo" className="w-60 mt-2 mb-2 rounded-xl border border-border object-cover" />
+              <p className="text-lg text-muted-foreground text-pretty">
+                Zaawansowany system zarządzania drukarką 3D. Monitoruj, kontroluj i optymalizuj swoje druki w czasie rzeczywistym.
+              </p>
+            </div>
+            
+            {/* Desktop */}
+            <p className="hidden lg:block text-lg text-muted-foreground max-w-xl text-pretty">
               Zaawansowany system zarządzania drukarką 3D. Monitoruj, kontroluj i optymalizuj swoje druki w czasie rzeczywistym.
             </p>
             
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-2 justify-center lg:justify-start">
               <button
                 onClick={() => navigate('/upload')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
@@ -118,11 +128,12 @@ export default function HomePage() {
             </div>
           </div>
           
-          <div className="relative">
+          {/* Desktop version - large logo */}
+          <div className="relative hidden lg:block">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
             <div className="relative p-0.2 bg-secondary/50 rounded-2xl border border-border">
               {/* <Printer size={80} className="text-primary" /> */}
-              <img src="images/logo.png" width={250} alt="" className='border rounded-2xl'/>
+              <img src="images/logo.png" alt="" className='border rounded-2xl w-60'/>
             </div>
           </div>
         </div>
