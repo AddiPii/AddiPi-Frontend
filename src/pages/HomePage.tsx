@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Printer, Activity, CheckCircle, XCircle, Clock, TrendingUp, Eye } from 'lucide-react';
+import { Activity, CheckCircle, XCircle, Clock, TrendingUp, Eye, Zap, ArrowRight, Layers } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { api } from '../services/api';
 import type { Job } from '../types';
@@ -54,221 +54,310 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusColor = (state?: string) => {
+  const getStatusIndicator = (state?: string, isPrinting?: boolean) => {
+    if (isPrinting) return { color: 'bg-primary', pulse: true, text: 'Drukuje' };
     switch (state) {
-      case 'Operational': return 'bg-green-100 text-green-800';
-      case 'Printing': return 'bg-blue-100 text-blue-800';
-      case 'Offline': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Operational': return { color: 'bg-primary', pulse: false, text: 'Gotowa' };
+      case 'Printing': return { color: 'bg-primary', pulse: true, text: 'Drukuje' };
+      case 'Offline': return { color: 'bg-muted-foreground', pulse: false, text: 'Offline' };
+      default: return { color: 'bg-muted-foreground', pulse: false, text: 'Offline' };
     }
   };
 
-  const getStatusText = (state?: string, isPrinting?: boolean) => {
-    if (isPrinting) return 'Drukuje';
-    switch (state) {
-      case 'Operational': return 'Bezczynna';
-      case 'Printing': return 'Drukuje';
-      case 'Offline': return 'Offline';
-      default: return 'Offline';
-    }
-  };
-
-  const getJobStatusColor = (status: string) => {
+  const getJobStatusStyle = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
+
+  const statusIndicator = getStatusIndicator(printerStatus?.printerState, printerStatus?.isPrinting);
 
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-lg p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">AddiPi 3D Printer</h1>
-            <p className="text-blue-100 text-lg">System zarządzania drukarką 3D</p>
+      <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 lg:p-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary border border-border">
+                <div className={`w-2 h-2 rounded-full ${statusIndicator.color} ${statusIndicator.pulse ? 'animate-pulse' : ''}`} />
+                <span className="text-sm font-medium text-foreground">{statusIndicator.text}</span>
+              </div>
+            </div>
+            
+            <h1 className="text-4xl lg:text-5xl font-bold text-foreground tracking-tight text-balance">
+              AddiPi 3D Printer
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-xl text-pretty">
+              Zaawansowany system zarządzania drukarką 3D. Monitoruj, kontroluj i optymalizuj swoje druki w czasie rzeczywistym.
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => navigate('/upload')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <Zap size={18} />
+                Rozpocznij druk
+              </button>
+              <button
+                onClick={() => navigate('/print')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-secondary text-foreground font-medium rounded-lg border border-border hover:bg-secondary/80 transition-colors"
+              >
+                <Eye size={18} />
+                Podgląd na żywo
+              </button>
+            </div>
           </div>
-          <Printer size={64} className="opacity-80" />
-          {/* <img src='images/logo.png' width={80} className='opacity-80 ' /> */}
+          
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="relative p-0.2 bg-secondary/50 rounded-2xl border border-border">
+              {/* <Printer size={80} className="text-primary" /> */}
+              <img src="images/logo.png" width={250} alt="" className='border rounded-2xl'/>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Printer Status */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Status drukarki</h2>
-          <span className={`px-4 py-2 rounded-full font-medium ${getStatusColor(printerStatus?.printerState)}`}>
-            {getStatusText(printerStatus?.printerState, printerStatus?.isPrinting)}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <Activity className="text-blue-600 mr-2" size={24} />
-              <h3 className="font-semibold text-gray-900">Postęp</h3>
+      {/* Status Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Current Job Card - Spans 2 columns on lg */}
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-lg border border-primary/20">
+                <Activity className="text-primary" size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Aktualny druk</h3>
+                <p className="text-sm text-muted-foreground">Status w czasie rzeczywistym</p>
+              </div>
             </div>
-            <div className="mt-3">
-              {currentJob ? (
-                <>
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>{currentJob.originalFileName}</span>
-                    <span>{currentJob.progress?.toFixed(1)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className="bg-blue-600 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${currentJob.progress || 0}%` }}
-                    />
-                  </div>
-                  {currentJob.printTimeLeft && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min
-                    </p>
-                  )}
-                  <button
-                    onClick={() => navigate(`/print`)}
-                    className="mt-3 w-full px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center justify-center"
-                  >
-                    <Eye size={18} className="mr-2" />
-                    Zobacz szczegóły
-                  </button>
-                </>
-              ) : (
-                <p className="text-gray-500">Brak aktywnego druku</p>
+            {currentJob && (
+              <button
+                onClick={() => navigate('/print')}
+                className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
+              >
+                Szczegóły
+                <ArrowRight size={16} />
+              </button>
+            )}
+          </div>
+          
+          {currentJob ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-foreground font-medium truncate pr-4">
+                  {currentJob.originalFileName}
+                </span>
+                <span className="text-2xl font-bold text-primary tabular-nums">
+                  {currentJob.progress?.toFixed(1)}%
+                </span>
+              </div>
+              
+              <div className="relative">
+                <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${currentJob.progress || 0}%` }}
+                  />
+                </div>
+              </div>
+              
+              {currentJob.printTimeLeft && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock size={14} />
+                  <span>Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min</span>
+                </div>
               )}
             </div>
-          </div>
-
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <CheckCircle className="text-green-600 mr-2" size={24} />
-              <h3 className="font-semibold text-gray-900">Ukończone</h3>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="p-4 bg-secondary/50 rounded-full mb-4">
+                <Layers size={32} className="text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">Brak aktywnego druku</p>
+              <button
+                onClick={() => navigate('/upload')}
+                className="mt-4 text-sm text-primary hover:text-primary/80 transition-colors"
+              >
+                Rozpocznij nowy druk
+              </button>
             </div>
-            <p className="text-3xl font-bold text-gray-900 mt-3">
+          )}
+        </div>
+
+        {/* Completed Card */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="flex items-start justify-between">
+            <div className="p-2.5 bg-primary/10 rounded-lg border border-primary/20">
+              <CheckCircle className="text-primary" size={20} />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Ukończone
+            </span>
+          </div>
+          <div className="mt-6">
+            <p className="text-4xl font-bold text-foreground tabular-nums">
               {metrics?.metrics.completed || 0}
             </p>
-            <p className="text-sm text-gray-600">Total prints</p>
-          </div>
-
-          <div className="bg-yellow-50 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <Clock className="text-yellow-600 mr-2" size={24} />
-              <h3 className="font-semibold text-gray-900">W kolejce</h3>
-            </div>
-            <p className="text-3xl font-bold text-gray-900 mt-3">
-              {(metrics?.metrics.queued || 0) + (metrics?.metrics.printing || 0)}
-            </p>
-            <p className="text-sm text-gray-600">Waiting jobs</p>
+            <p className="text-sm text-muted-foreground mt-1">Druki zakończone sukcesem</p>
           </div>
         </div>
       </div>
 
-      {/* Statistics */}
-      {metrics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Drukuje</p>
-                <p className="text-2xl font-bold text-blue-600">{metrics.metrics.printing}</p>
-              </div>
-              <TrendingUp className="text-blue-600" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Zaplanowane</p>
-                <p className="text-2xl font-bold text-purple-600">{metrics.metrics.queued}</p>
-              </div>
-              <Clock className="text-purple-600" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Niepowodzenia</p>
-                <p className="text-2xl font-bold text-red-600">{metrics.metrics.failed}</p>
-              </div>
-              <XCircle className="text-red-600" size={32} />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Wszystkie</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.metrics.total}</p>
-              </div>
-              <Activity className="text-gray-600" size={32} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent Jobs */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Ostatnie druki</h2>
-        {recentJobs.length > 0 ? (
-          <div className="space-y-3">
-            {recentJobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{job.originalFileName}</p>
-                  <p className="text-sm text-gray-600">{job.userEmail}</p>
-                </div>
-                <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getJobStatusColor(job.status)}`}>
-                    {job.status}
-                  </span>
-                  {job.completedAt && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formatDateSafe(job.completedAt)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-center py-8">Brak ostatnich druków</p>
-        )}
+      {/* Statistics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          icon={TrendingUp}
+          label="Drukuje"
+          value={metrics?.metrics.printing || 0}
+          color="primary"
+        />
+        <StatCard
+          icon={Clock}
+          label="W kolejce"
+          value={(metrics?.metrics.queued || 0) + (metrics?.metrics.printing || 0)}
+          color="yellow"
+        />
+        <StatCard
+          icon={XCircle}
+          label="Niepowodzenia"
+          value={metrics?.metrics.failed || 0}
+          color="destructive"
+        />
+        <StatCard
+          icon={Activity}
+          label="Wszystkie"
+          value={metrics?.metrics.total || 0}
+          color="muted"
+        />
       </div>
 
-      {/* Upcoming Jobs */}
-      {upcomingJobs.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Nadchodzące druki</h2>
-          <div className="space-y-3">
-            {upcomingJobs.slice(0, 5).map((job) => (
-              <div key={job.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{job.originalFileName}</p>
-                  <p className="text-sm text-gray-600">{job.userEmail}</p>
+      {/* Jobs Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Jobs */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground">Ostatnie druki</h2>
+            <p className="text-sm text-muted-foreground">Historia ukończonych zadań</p>
+          </div>
+          
+          <div className="divide-y divide-border">
+            {recentJobs.length > 0 ? (
+              recentJobs.map((job) => (
+                <div key={job.id} className="px-6 py-4 hover:bg-secondary/30 transition-colors">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground truncate">{job.originalFileName}</p>
+                      <p className="text-sm text-muted-foreground truncate">{job.userEmail}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getJobStatusStyle(job.status)}`}>
+                        {job.status}
+                      </span>
+                      {job.completedAt && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatDateSafe(job.completedAt)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getJobStatusColor(job.status)}`}>
-                    {job.status}
-                  </span>
-                  {job.scheduledAt && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formatDateTimeSafe(job.scheduledAt)}
-                    </p>
-                  )}
-                </div>
+              ))
+            ) : (
+              <div className="px-6 py-12 text-center">
+                <p className="text-muted-foreground">Brak ostatnich druków</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      )}
+
+        {/* Upcoming Jobs */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground">Nadchodzące druki</h2>
+            <p className="text-sm text-muted-foreground">Zaplanowane zadania</p>
+          </div>
+          
+          <div className="divide-y divide-border">
+            {upcomingJobs.length > 0 ? (
+              upcomingJobs.slice(0, 5).map((job) => (
+                <div key={job.id} className="px-6 py-4 hover:bg-secondary/30 transition-colors">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-foreground truncate">{job.originalFileName}</p>
+                      <p className="text-sm text-muted-foreground truncate">{job.userEmail}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getJobStatusStyle(job.status)}`}>
+                        {job.status}
+                      </span>
+                      {job.scheduledAt && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatDateTimeSafe(job.scheduledAt)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-6 py-12 text-center">
+                <p className="text-muted-foreground">Brak zaplanowanych druków</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface StatCardProps {
+  icon: React.ElementType;
+  label: string;
+  value: number;
+  color: 'primary' | 'yellow' | 'destructive' | 'muted';
+}
+
+function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
+  const colorStyles = {
+    primary: 'bg-primary/10 text-primary border-primary/20',
+    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    destructive: 'bg-destructive/10 text-destructive border-destructive/20',
+    muted: 'bg-secondary text-muted-foreground border-border',
+  };
+
+  const valueColors = {
+    primary: 'text-primary',
+    yellow: 'text-yellow-400',
+    destructive: 'text-destructive',
+    muted: 'text-foreground',
+  };
+
+  return (
+    <div className="bg-card rounded-xl border border-border p-5">
+      <div className="flex items-center justify-between">
+        <div className={`p-2 rounded-lg border ${colorStyles[color]}`}>
+          <Icon size={18} />
+        </div>
+      </div>
+      <div className="mt-4">
+        <p className={`text-3xl font-bold tabular-nums ${valueColors[color]}`}>
+          {value}
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">{label}</p>
+      </div>
     </div>
   );
 }
