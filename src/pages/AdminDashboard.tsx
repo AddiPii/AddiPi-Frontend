@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, FileText, Trash2, RefreshCw, Shield, UserX, Square } from 'lucide-react';
+import { Users, FileText, Trash2, RefreshCw, Shield, UserX, Square, ChevronDown } from 'lucide-react';
 import { api } from '../services/api';
 import type { User, Job } from '../types';
 import toast from 'react-hot-toast';
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     try {
       const { data } = await api.getAllUsers({ limit: 100 });
       setUsers(data.users);
-    } catch (error) {
+    } catch {
       toast.error('Nie udało się załadować użytkowników');
     }
   };
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
       const params = jobStatus !== 'all' ? { status: jobStatus, limit: 100 } : { limit: 100 };
       const { data } = await api.getAllJobs(params);
       setJobs(data.jobs);
-    } catch (error) {
+    } catch {
       toast.error('Nie udało się załadować zadań');
     }
   };
@@ -124,51 +124,55 @@ export default function AdminDashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+      case 'cancelled': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Panel Administratora</h1>
-        <div className="flex items-center space-x-2 text-sm">
-          <Shield className="text-blue-600" size={20} />
-          <span className="text-gray-600">Administrator</span>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Panel Administratora</h1>
+          <p className="text-muted-foreground mt-1">Zarządzaj użytkownikami i zadaniami druku</p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
+          <Shield className="text-primary" size={18} />
+          <span className="text-sm font-medium text-primary">Administrator</span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+      <div className="border-b border-border">
+        <nav className="flex gap-8">
           <button
             onClick={() => setActiveTab('users')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'users'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             }`}
           >
-            <Users size={20} className="inline mr-2" />
+            <Users size={18} />
             Użytkownicy ({users.length})
           </button>
           <button
             onClick={() => setActiveTab('jobs')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'jobs'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
             }`}
           >
-            <FileText size={20} className="inline mr-2" />
+            <FileText size={18} />
             Zadania ({jobs.length})
           </button>
         </nav>
@@ -176,64 +180,70 @@ export default function AdminDashboard() {
 
       {/* Users Tab */}
       {activeTab === 'users' && (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-secondary/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Użytkownik</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rola</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data utworzenia</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Akcje</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Użytkownik</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Rola</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Data utworzenia</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Akcje</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.id} className="hover:bg-secondary/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-foreground">
                         {user.firstName} {user.lastName}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        user.role === 'admin' 
+                          ? 'bg-primary/10 text-primary border-primary/20' 
+                          : 'bg-secondary text-foreground border-border'
                       }`}>
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        user.isVerified 
+                          ? 'bg-primary/10 text-primary border-primary/20' 
+                          : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                       }`}>
                         {user.isVerified ? 'Zweryfikowany' : 'Niezweryfikowany'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {formatDateTimeSafe(user.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleToggleRole(user.id, user.role)}
-                        disabled={loading}
-                        className="text-blue-600 hover:text-blue-900 mr-4 disabled:opacity-50"
-                        title={user.role === 'admin' ? 'Odbierz uprawnienia admina' : 'Nadaj uprawnienia admina'}
-                      >
-                        <Shield size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id, user.email)}
-                        disabled={loading}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                        title="Usuń użytkownika"
-                      >
-                        <UserX size={18} />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleToggleRole(user.id, user.role)}
+                          disabled={loading}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
+                          title={user.role === 'admin' ? 'Odbierz uprawnienia admina' : 'Nadaj uprawnienia admina'}
+                        >
+                          <Shield size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          disabled={loading}
+                          className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
+                          title="Usuń użytkownika"
+                        >
+                          <UserX size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -247,98 +257,103 @@ export default function AdminDashboard() {
       {activeTab === 'jobs' && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <select
-              value={jobStatus}
-              onChange={(e) => setJobStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Wszystkie</option>
-              <option value="pending">Oczekujące</option>
-              <option value="scheduled">Zaplanowane</option>
-              <option value="printing">Drukuje</option>
-              <option value="completed">Ukończone</option>
-              <option value="failed">Nieudane</option>
-              <option value="cancelled">Anulowane</option>
-            </select>
+            <div className="relative">
+              <select
+                value={jobStatus}
+                onChange={(e) => setJobStatus(e.target.value)}
+                className="appearance-none px-4 py-2 pr-10 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors cursor-pointer"
+              >
+                <option value="all">Wszystkie</option>
+                <option value="pending">Oczekujące</option>
+                <option value="scheduled">Zaplanowane</option>
+                <option value="printing">Drukuje</option>
+                <option value="completed">Ukończone</option>
+                <option value="failed">Nieudane</option>
+                <option value="cancelled">Anulowane</option>
+              </select>
+              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-secondary/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nazwa pliku</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Użytkownik</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Postęp</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data utworzenia</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Akcje</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nazwa pliku</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Użytkownik</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Postęp</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Data utworzenia</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Akcje</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-border">
                   {jobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-gray-50">
+                    <tr key={job.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{job.originalFileName}</div>
-                        <div className="text-xs text-gray-500">ID: {job.id}</div>
+                        <div className="text-sm font-medium text-foreground">{job.originalFileName}</div>
+                        <div className="text-xs text-muted-foreground font-mono">ID: {job.id.slice(0, 8)}...</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {job.userEmail}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(job.status)}`}>
                           {job.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {job.progress !== undefined ? (
                           <div className="w-24">
-                            <div className="text-xs text-gray-600 mb-1">{job.progress.toFixed(1)}%</div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="text-xs text-muted-foreground mb-1 tabular-nums">{job.progress.toFixed(1)}%</div>
+                            <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
                               <div
-                                className="bg-blue-600 h-2 rounded-full"
+                                className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all"
                                 style={{ width: `${job.progress}%` }}
                               />
                             </div>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400">-</span>
+                          <span className="text-sm text-muted-foreground">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {formatDateTimeSafe(job.createdAt)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        {(job.status === 'failed' || job.status === 'cancelled') && (
-                          <button
-                            onClick={() => handleRetryJob(job.id)}
-                            disabled={loading}
-                            className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                            title="Ponów"
-                          >
-                            <RefreshCw size={18} />
-                          </button>
-                        )}
-                        {['scheduled', 'pending', 'printing'].includes(job.status) && (
-                          <button
-                            onClick={() => handleCancelJob(job.id)}
-                            disabled={loading}
-                            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
-                            title="Anuluj"
-                          >
-                            <Square size={18} />
-                          </button>
-                        )}
-                        {['completed', 'failed', 'cancelled'].includes(job.status) && (
-                          <button
-                            onClick={() => handleDeleteJob(job.id)}
-                            disabled={loading}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                            title="Usuń"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-1">
+                          {(job.status === 'failed' || job.status === 'cancelled') && (
+                            <button
+                              onClick={() => handleRetryJob(job.id)}
+                              disabled={loading}
+                              className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
+                              title="Ponów"
+                            >
+                              <RefreshCw size={18} />
+                            </button>
+                          )}
+                          {['scheduled', 'pending', 'printing'].includes(job.status) && (
+                            <button
+                              onClick={() => handleCancelJob(job.id)}
+                              disabled={loading}
+                              className="p-2 text-yellow-400 hover:bg-yellow-500/10 rounded-lg disabled:opacity-50 transition-colors"
+                              title="Anuluj"
+                            >
+                              <Square size={18} />
+                            </button>
+                          )}
+                          {['completed', 'failed', 'cancelled'].includes(job.status) && (
+                            <button
+                              onClick={() => handleDeleteJob(job.id)}
+                              disabled={loading}
+                              className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
+                              title="Usuń"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

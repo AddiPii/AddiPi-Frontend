@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Square, Play, Clock, TrendingUp, AlertCircle, CheckCircle, XCircle, Camera, Eye } from 'lucide-react';
+import { Square, Play, Clock, TrendingUp, AlertCircle, CheckCircle, XCircle, Camera, Eye, Thermometer, Upload } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import type { Job } from '../types';
 import toast from 'react-hot-toast';
 import { formatDateTimeSafe, formatDuration } from '../utils/formatters';
+import { Link } from 'react-router-dom';
 
 interface ApiError {
   response?: {
@@ -22,13 +23,11 @@ export default function PrintControlPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Check if current user can control this job
   const canControlJob = (job: Job | null): boolean => {
     if (!job || !user) return false;
     return user.role === 'admin' || job.userId === user.id;
   };
 
-  // All authenticated users can view job progress
   const canViewJob = (): boolean => {
     return !!user;
   };
@@ -55,11 +54,9 @@ export default function PrintControlPage() {
     try {
       await fetchCurrentJob();
       
-      // If there's a current job printing, show it
       if (currentJob && currentJob.status === 'printing') {
         setDisplayJob(currentJob);
       } else {
-        // Otherwise, fetch the most recent job
         const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
         if (data.jobs.length > 0) {
           setDisplayJob(data.jobs[0]);
@@ -104,27 +101,27 @@ export default function PrintControlPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+      case 'cancelled': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="text-green-600" size={32} />;
-      case 'failed': return <XCircle className="text-red-600" size={32} />;
-      case 'printing': return <TrendingUp className="text-blue-600" size={32} />;
-      case 'pending': return <Clock className="text-yellow-600" size={32} />;
-      case 'scheduled': return <Clock className="text-purple-600" size={32} />;
-      case 'cancelled': return <AlertCircle className="text-gray-600" size={32} />;
-      default: return <AlertCircle className="text-gray-600" size={32} />;
+      case 'completed': return <CheckCircle className="text-primary" size={28} />;
+      case 'failed': return <XCircle className="text-destructive" size={28} />;
+      case 'printing': return <TrendingUp className="text-blue-400" size={28} />;
+      case 'pending': return <Clock className="text-yellow-400" size={28} />;
+      case 'scheduled': return <Clock className="text-violet-400" size={28} />;
+      case 'cancelled': return <AlertCircle className="text-muted-foreground" size={28} />;
+      default: return <AlertCircle className="text-muted-foreground" size={28} />;
     }
   };
 
@@ -141,62 +138,103 @@ export default function PrintControlPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Ładowanie danych...</p>
+          <div className="w-12 h-12 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Ładowanie danych...</p>
         </div>
       </div>
     );
   }
 
+  // No active job state
   if (!displayJob) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Kontrola druku</h1>
-        <div className="bg-white rounded-xl shadow-md p-12 text-center">
-          <AlertCircle className="mx-auto text-gray-400 mb-4" size={64} />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Brak aktywnych zadań druku</h2>
-          <p className="text-gray-600 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Kontrola druku</h1>
+          <p className="text-muted-foreground mt-1">Monitorowanie aktywnych zadań</p>
+        </div>
+
+        {/* Empty State */}
+        <div className="bg-card rounded-xl border border-border p-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-secondary rounded-2xl border border-border mb-6">
+            <AlertCircle className="text-muted-foreground" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Brak aktywnych zadań druku</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Obecnie nie ma żadnych zadań do monitorowania. Prześlij plik G-code, aby rozpocząć druk.
           </p>
-          <a
-            href="/upload"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          <Link
+            to="/upload"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
           >
+            <Upload size={18} />
             Prześlij plik
-          </a>
+          </Link>
         </div>
-        <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <Camera className="mr-2 text-blue-600" size={24} />
-                Podgląd z kamery
-              </h3>
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                {cameraUrl ? ('Online') : ('Offline')}
-              </span>
+
+        {/* Camera Section */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-secondary rounded-lg border border-border">
+                <Camera className="text-muted-foreground" size={18} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Podgląd z kamery</h3>
+                <p className="text-sm text-muted-foreground">Obraz w czasie rzeczywistym</p>
+              </div>
             </div>
-            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <p className="mt-8 mb-2">temperatura podłoża: {printerStatus?.temperature?.bed != null ? printerStatus.temperature.bed + ' °C' : "nieznana"}</p>
-                <p className="mb-7 mt-3">temperatura dyszy: {printerStatus?.temperature?.nozzle != null ? printerStatus.temperature.nozzle + ' °C' : "nieznana"}</p>
-                {cameraUrl && !cameraError ? (
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+              cameraUrl ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'
+            }`}>
+              {cameraUrl ? 'Online' : 'Offline'}
+            </span>
+          </div>
+          
+          <div className="p-6">
+            {/* Temperature Info */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-secondary/50 rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                  <Thermometer size={14} />
+                  Temperatura podłoża
+                </div>
+                <p className="text-xl font-bold text-foreground tabular-nums">
+                  {printerStatus?.temperature?.bed != null ? `${printerStatus.temperature.bed} °C` : "---"}
+                </p>
+              </div>
+              <div className="bg-secondary/50 rounded-lg border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                  <Thermometer size={14} />
+                  Temperatura dyszy
+                </div>
+                <p className="text-xl font-bold text-foreground tabular-nums">
+                  {printerStatus?.temperature?.nozzle != null ? `${printerStatus.temperature.nozzle} °C` : "---"}
+                </p>
+              </div>
+            </div>
+
+            {/* Camera Feed */}
+            <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
+              {cameraUrl && !cameraError ? (
                 <img
                   src={`${cameraUrl}/?action=stream`}
+                  alt="Camera feed"
                   className="w-full h-full object-cover"
                   onError={() => setCameraError(true)}
                 />
               ) : (
-                <div>
-                  <Camera className="mx-auto text-gray-400 mb-3" size={48} />
-                  <p className="text-gray-600 font-medium">Kamera offline</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                <div className="text-center py-8">
+                  <Camera className="mx-auto text-muted-foreground mb-3" size={48} />
+                  <p className="text-foreground font-medium">Kamera offline</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Drukarka jest offline lub kamera została wyłączona
                   </p>
                 </div>
               )}
-              </div>
             </div>
           </div>
+        </div>
       </div>
     );
   }
@@ -210,22 +248,22 @@ export default function PrintControlPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Kontrola druku</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Kontrola druku</h1>
+          <p className="text-muted-foreground mt-1">
             {isCurrentlyPrinting ? 'Monitorowanie aktywnego druku' : 'Ostatnie zadanie druku'}
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center px-4 py-2 bg-blue-50 rounded-lg">
-            <Eye size={18} className="text-blue-600 mr-2" />
-            <span className="text-sm font-medium text-blue-800">Tryb obserwacji</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary border border-border rounded-lg">
+            <Eye size={16} className="text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Tryb obserwacji</span>
           </div>
           {hasControlAccess && (
-            <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg">
-              <CheckCircle size={18} className="text-green-600 mr-2" />
-              <span className="text-sm font-medium text-green-800">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
+              <CheckCircle size={16} className="text-primary" />
+              <span className="text-sm font-medium text-primary">
                 {user?.role === 'admin' ? 'Admin' : 'Kontrola'}
               </span>
             </div>
@@ -235,127 +273,117 @@ export default function PrintControlPage() {
 
       {/* Owner/User Info */}
       {!isOwnJob && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="text-yellow-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="text-yellow-400 mt-0.5 flex-shrink-0" size={20} />
           <div>
-            <p className="text-sm font-medium text-yellow-800">
-              To zadanie należy do użytkownika: <span className="font-bold">{displayJob.userEmail}</span>
+            <p className="text-sm font-medium text-foreground">
+              To zadanie należy do użytkownika: <span className="text-yellow-400">{displayJob.userEmail}</span>
             </p>
-            {user?.role === 'admin' ? (
-              <p className="text-xs text-yellow-700 mt-1">
-                Jako administrator masz pełny dostęp do kontroli tego druku.
-              </p>
-            ) : (
-              <p className="text-xs text-yellow-700 mt-1">
-                Możesz monitorować postęp, ale nie możesz kontrolować druku innego użytkownika.
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {user?.role === 'admin' 
+                ? 'Jako administrator masz pełny dostęp do kontroli tego druku.'
+                : 'Możesz monitorować postęp, ale nie możesz kontrolować druku innego użytkownika.'}
+            </p>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Job Info - Left Column (2/3 width) */}
+        {/* Main Job Info - Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Progress Card */}
-          <div className={`bg-gradient-to-br ${
-            isCurrentlyPrinting 
-              ? 'from-blue-500 to-blue-700' 
-              : displayJob.status === 'completed'
-              ? 'from-green-500 to-green-700'
-              : displayJob.status === 'failed'
-              ? 'from-red-500 to-red-700'
-              : 'from-gray-500 to-gray-700'
-          } rounded-xl shadow-lg p-6 text-white`}>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-2">
+          <div className="relative overflow-hidden bg-card rounded-xl border border-border p-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+            
+            <div className="relative space-y-6">
+              {/* Job Header */}
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-xl border ${getStatusStyle(displayJob.status)}`}>
                   {getStatusIcon(displayJob.status)}
-                  <div>
-                    <h2 className="text-2xl font-bold">{displayJob.originalFileName}</h2>
-                    <p className="text-sm opacity-90 mt-1">{displayJob.userEmail}</p>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-foreground truncate">{displayJob.originalFileName}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{displayJob.userEmail}</p>
+                  <span className={`inline-flex mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(displayJob.status)}`}>
+                    {statusLabels[displayJob.status] || displayJob.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Section */}
+              {isCurrentlyPrinting && displayJob.progress !== undefined && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Postęp drukowania</span>
+                    <span className="text-2xl font-bold text-primary tabular-nums">{displayJob.progress.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full h-4 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
+                      style={{ width: `${displayJob.progress}%` }}
+                    />
                   </div>
                 </div>
-                <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(displayJob.status)}`}>
-                  {statusLabels[displayJob.status] || displayJob.status}
-                </span>
-              </div>
-            </div>
+              )}
 
-            {/* Progress Section */}
-            {isCurrentlyPrinting && displayJob.progress !== undefined && (
-              <div className="space-y-4 mt-6">
-                <div className="flex items-center justify-between text-xl">
-                  <span className="font-medium">Postęp drukowania</span>
-                  <span className="font-bold">{displayJob.progress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-white bg-opacity-30 rounded-full h-6">
-                  <div
-                    className="bg-white h-6 rounded-full transition-all duration-500 flex items-center justify-end pr-3"
-                    style={{ width: `${displayJob.progress}%` }}
-                  >
-                    <span className="text-blue-600 font-bold text-sm">
-                      {displayJob.progress > 10 ? `${displayJob.progress.toFixed(0)}%` : ''}
-                    </span>
+              {/* Time Information */}
+              <div className="grid grid-cols-2 gap-4">
+                {displayJob.printTime && (
+                  <div className="bg-secondary/50 rounded-lg border border-border p-4">
+                    <p className="text-sm text-muted-foreground mb-1">Całkowity czas</p>
+                    <p className="text-xl font-bold text-foreground">{formatDuration(displayJob.printTime)}</p>
                   </div>
-                </div>
+                )}
+                {displayJob.printTimeLeft && isCurrentlyPrinting && (
+                  <div className="bg-secondary/50 rounded-lg border border-border p-4">
+                    <p className="text-sm text-muted-foreground mb-1">Pozostało</p>
+                    <p className="text-xl font-bold text-foreground">{formatDuration(displayJob.printTimeLeft)}</p>
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Time Information */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              {displayJob.printTime && (
-                <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-sm opacity-90 mb-1">Całkowity czas</p>
-                  <p className="text-2xl font-bold">{formatDuration(displayJob.printTime)}</p>
-                </div>
-              )}
-              {displayJob.printTimeLeft && isCurrentlyPrinting && (
-                <div className="bg-white bg-opacity-20 rounded-lg p-4">
-                  <p className="text-sm opacity-90 mb-1">Pozostało</p>
-                  <p className="text-2xl font-bold">{formatDuration(displayJob.printTimeLeft)}</p>
+              {/* Error Message */}
+              {displayJob.failureReason && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                  <p className="text-sm font-medium text-destructive mb-1">Powód błędu:</p>
+                  <p className="text-sm text-muted-foreground">{displayJob.failureReason}</p>
                 </div>
               )}
             </div>
-
-            {/* Error Message */}
-            {displayJob.failureReason && (
-              <div className="bg-white bg-opacity-20 rounded-lg p-4 mt-4">
-                <p className="text-sm font-medium mb-1">Powód błędu:</p>
-                <p className="text-sm">{displayJob.failureReason}</p>
-              </div>
-            )}
           </div>
 
-          {/* Camera Section - Placeholder for future implementation */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <Camera className="mr-2 text-blue-600" size={24} />
-                Podgląd z kamery
-              </h3>
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                {cameraUrl ? ('Online') : ('Offline')}
+          {/* Camera Section */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-secondary rounded-lg border border-border">
+                  <Camera className="text-muted-foreground" size={18} />
+                </div>
+                <h3 className="font-semibold text-foreground">Podgląd z kamery</h3>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                cameraUrl ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'
+              }`}>
+                {cameraUrl ? 'Online' : 'Offline'}
               </span>
             </div>
-            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                {cameraUrl && !cameraError ? (
+            <div className="aspect-video bg-secondary flex items-center justify-center">
+              {cameraUrl && !cameraError ? (
                 <img
                   src={`${cameraUrl}/?action=stream`}
+                  alt="Camera feed"
                   className="w-full h-full object-cover"
                   onError={() => setCameraError(true)}
                 />
               ) : (
-                <div>
-                  <Camera className="mx-auto text-gray-400 mb-3" size={48} />
-                  <p className="text-gray-600 font-medium">Kamera offline</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                <div className="text-center py-8">
+                  <Camera className="mx-auto text-muted-foreground mb-3" size={48} />
+                  <p className="text-foreground font-medium">Kamera offline</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Drukarka jest offline lub kamera została wyłączona
                   </p>
                 </div>
               )}
-              </div>
             </div>
           </div>
         </div>
@@ -364,20 +392,40 @@ export default function PrintControlPage() {
         <div className="space-y-6">
           {/* Control Panel */}
           {canViewJob() && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Panel kontroli</h3>
-              <p className="mt-8 mb-2">temperatura podłoża: {printerStatus?.temperature?.bed != null ? printerStatus.temperature.bed + ' °C' : "nieznana"}</p>
-              <p className="mb-7 mt-3">temperatura dyszy: {printerStatus?.temperature?.nozzle != null ? printerStatus.temperature.nozzle + ' °C' : "nieznana"}</p>
-              <p></p>
+            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Panel kontroli</h3>
+              
+              {/* Temperature Info */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-border">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Thermometer size={14} />
+                    Podłoże
+                  </span>
+                  <span className="font-medium text-foreground tabular-nums">
+                    {printerStatus?.temperature?.bed != null ? `${printerStatus.temperature.bed} °C` : "---"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-border">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Thermometer size={14} />
+                    Dysza
+                  </span>
+                  <span className="font-medium text-foreground tabular-nums">
+                    {printerStatus?.temperature?.nozzle != null ? `${printerStatus.temperature.nozzle} °C` : "---"}
+                  </span>
+                </div>
+              </div>
+
               {hasControlAccess ? (
-                <div className="space-y-3">
+                <div className="space-y-3 pt-2">
                   {canCancel && (
                     <button
                       onClick={() => handleCancelJob(displayJob.id)}
                       disabled={actionLoading}
-                      className="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
                     >
-                      <Square size={20} className="mr-2" />
+                      <Square size={18} />
                       {displayJob.status === 'printing' ? 'Zatrzymaj druk' : 'Anuluj zadanie'}
                     </button>
                   )}
@@ -385,24 +433,24 @@ export default function PrintControlPage() {
                     <button
                       onClick={() => handleRetryJob(displayJob.id)}
                       disabled={actionLoading}
-                      className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
                     >
-                      <Play size={20} className="mr-2" />
+                      <Play size={18} />
                       Wznów druk
                     </button>
                   )}
                   {!canCancel && !canRetry && (
-                    <div className="text-center py-4 text-gray-500">
-                      <CheckCircle className="mx-auto mb-2" size={32} />
-                      <p className="text-sm">Brak dostępnych akcji</p>
+                    <div className="text-center py-4">
+                      <CheckCircle className="mx-auto text-muted-foreground mb-2" size={24} />
+                      <p className="text-sm text-muted-foreground">Brak dostępnych akcji</p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-lg p-4 text-center">
-                  <Eye className="mx-auto text-gray-400 mb-2" size={32} />
-                  <p className="text-sm text-gray-600 font-medium">Tryb tylko do odczytu</p>
-                  <p className="text-xs text-gray-500 mt-1">
+                <div className="bg-secondary/50 rounded-lg border border-border p-4 text-center">
+                  <Eye className="mx-auto text-muted-foreground mb-2" size={24} />
+                  <p className="text-sm text-foreground font-medium">Tryb tylko do odczytu</p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Możesz monitorować postęp, ale nie kontrolować tego druku
                   </p>
                 </div>
@@ -411,74 +459,47 @@ export default function PrintControlPage() {
           )}
 
           {/* Job Details */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Szczegóły zadania</h3>
+          <div className="bg-card rounded-xl border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Szczegóły zadania</h3>
             <div className="space-y-3">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">ID zadania</p>
-                <p className="font-mono text-xs text-gray-900 break-all">{displayJob.id}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1">ID pliku</p>
-                <p className="font-mono text-xs text-gray-900 break-all">{displayJob.fileId}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Użytkownik</p>
-                <p className="text-sm text-gray-900">{displayJob.userEmail}</p>
-              </div>
-              {displayJob.createdAt && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Utworzono</p>
-                  <p className="text-sm text-gray-900">{formatDateTimeSafe(displayJob.createdAt)}</p>
-                </div>
-              )}
-              {displayJob.scheduledAt && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Zaplanowano na</p>
-                  <p className="text-sm text-gray-900">{formatDateTimeSafe(displayJob.scheduledAt)}</p>
-                </div>
-              )}
-              {displayJob.startedAt && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Rozpoczęto</p>
-                  <p className="text-sm text-gray-900">{formatDateTimeSafe(displayJob.startedAt)}</p>
-                </div>
-              )}
-              {displayJob.completedAt && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Ukończono</p>
-                  <p className="text-sm text-gray-900">{formatDateTimeSafe(displayJob.completedAt)}</p>
-                </div>
-              )}
-              {displayJob.deviceId && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">ID urządzenia</p>
-                  <p className="font-mono text-xs text-gray-900">{displayJob.deviceId}</p>
-                </div>
-              )}
+              <DetailRow label="ID zadania" value={displayJob.id} mono />
+              <DetailRow label="ID pliku" value={displayJob.fileId} mono />
+              <DetailRow label="Użytkownik" value={displayJob.userEmail} />
+              {displayJob.createdAt && <DetailRow label="Utworzono" value={formatDateTimeSafe(displayJob.createdAt)} />}
+              {displayJob.scheduledAt && <DetailRow label="Zaplanowano na" value={formatDateTimeSafe(displayJob.scheduledAt)} />}
+              {displayJob.startedAt && <DetailRow label="Rozpoczęto" value={formatDateTimeSafe(displayJob.startedAt)} />}
+              {displayJob.completedAt && <DetailRow label="Ukończono" value={formatDateTimeSafe(displayJob.completedAt)} />}
+              {displayJob.deviceId && <DetailRow label="ID urządzenia" value={displayJob.deviceId} mono />}
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-blue-50 rounded-xl p-4">
-            <h4 className="font-semibold text-gray-900 mb-3 text-sm">Szybkie akcje</h4>
-            <div className="space-y-2">
-              <a
-                href="/dashboard"
-                className="block text-center px-4 py-2 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-              >
-                Zobacz wszystkie druki
-              </a>
-              <a
-                href="/upload"
-                className="block text-center px-4 py-2 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-              >
-                Prześlij nowy plik
-              </a>
-            </div>
+          <div className="bg-secondary/50 rounded-xl border border-border p-4 space-y-2">
+            <h4 className="font-semibold text-foreground text-sm mb-3">Szybkie akcje</h4>
+            <Link
+              to="/dashboard"
+              className="block text-center px-4 py-2 bg-card text-foreground rounded-lg text-sm font-medium hover:bg-secondary border border-border transition-colors"
+            >
+              Wróć do dashboardu
+            </Link>
+            <Link
+              to="/upload"
+              className="block text-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Nowy druk
+            </Link>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      <p className={`text-sm text-foreground break-all ${mono ? 'font-mono text-xs' : ''}`}>{value}</p>
     </div>
   );
 }

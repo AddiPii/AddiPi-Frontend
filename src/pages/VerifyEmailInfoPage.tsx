@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Mail, CheckCircle, RefreshCw } from 'lucide-react';
+import { Mail, CheckCircle, RefreshCw, Printer, ArrowLeft } from 'lucide-react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -21,7 +21,7 @@ export default function VerifyEmailInfoPage() {
       await api.resendVerification(email);
       setResent(true);
       toast.success('Email weryfikacyjny został wysłany ponownie!');
-    } catch (error) {
+    } catch {
       toast.error('Nie udało się wysłać emaila');
     } finally {
       setResending(false);
@@ -29,82 +29,103 @@ export default function VerifyEmailInfoPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <Mail className="text-blue-600" size={32} />
-          </div>
-          
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Sprawdź swoją skrzynkę email
-          </h2>
-          
-          <p className="text-gray-600 mb-6">
-            Wysłaliśmy link weryfikacyjny na adres:
-          </p>
-          
-          <div className="bg-blue-50 rounded-lg p-4 mb-6">
-            <p className="text-blue-800 font-medium">{email}</p>
-          </div>
-
-          <div className="space-y-4 text-left bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="flex items-start">
-              <CheckCircle className="text-green-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
-              <p className="text-sm text-gray-700">
-                Kliknij link w emailu, aby zweryfikować swoje konto
-              </p>
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl shadow-black/5">
+          <div className="text-center">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20 mb-6">
+              <Mail className="text-primary" size={28} />
             </div>
-            <div className="flex items-start">
-              <CheckCircle className="text-green-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
-              <p className="text-sm text-gray-700">
-                Po weryfikacji możesz się zalogować
-              </p>
+            
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Sprawdź swoją skrzynkę email
+            </h2>
+            
+            <p className="text-muted-foreground mb-6">
+              Wysłaliśmy link weryfikacyjny na adres:
+            </p>
+            
+            {/* Email Badge */}
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+              <p className="text-primary font-medium">{email}</p>
             </div>
-            <div className="flex items-start">
-              <CheckCircle className="text-green-600 mr-3 mt-0.5 flex-shrink-0" size={20} />
-              <p className="text-sm text-gray-700">
-                Link jest ważny przez 24 godziny
-              </p>
+
+            {/* Steps */}
+            <div className="space-y-3 text-left bg-secondary/50 rounded-xl border border-border p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-primary/10 rounded-full">
+                  <CheckCircle className="text-primary" size={16} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Kliknij link w emailu, aby zweryfikować swoje konto
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-primary/10 rounded-full">
+                  <CheckCircle className="text-primary" size={16} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Po weryfikacji możesz się zalogować
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-1 bg-primary/10 rounded-full">
+                  <CheckCircle className="text-primary" size={16} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Link jest ważny przez 24 godziny
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="text-sm text-gray-600 mb-6">
-            Nie otrzymałeś emaila? Sprawdź folder SPAM lub kliknij poniżej.
-          </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Nie otrzymałeś emaila? Sprawdź folder SPAM lub kliknij poniżej.
+            </p>
 
-          {!resent ? (
-            <button
-              onClick={handleResendEmail}
-              disabled={resending}
-              className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-4"
+            {/* Resend Button */}
+            {!resent ? (
+              <button
+                onClick={handleResendEmail}
+                disabled={resending}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-4"
+              >
+                {resending ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Wysyłanie...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={18} />
+                    Wyślij ponownie
+                  </>
+                )}
+              </button>
+            ) : (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-4">
+                <p className="text-primary text-sm font-medium flex items-center justify-center gap-2">
+                  <CheckCircle size={16} />
+                  Email został wysłany ponownie!
+                </p>
+              </div>
+            )}
+
+            {/* Back Link */}
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {resending ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                  Wysyłanie...
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={20} className="mr-2" />
-                  Wyślij ponownie
-                </>
-              )}
-            </button>
-          ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <p className="text-green-800 text-sm font-medium">
-                ✓ Email został wysłany ponownie!
-              </p>
-            </div>
-          )}
+              <ArrowLeft size={16} />
+              Powrót do logowania
+            </Link>
+          </div>
+        </div>
 
-          <Link
-            to="/login"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Powrót do logowania
-          </Link>
+        {/* Branding */}
+        <div className="flex items-center justify-center gap-2 mt-6 text-muted-foreground">
+          <Printer size={16} />
+          <span className="text-sm">AddiPi 3D Printer System</span>
         </div>
       </div>
     </div>

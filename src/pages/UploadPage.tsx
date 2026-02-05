@@ -1,5 +1,5 @@
-import { useState, } from 'react';
-import { CheckCircle, Upload, Calendar, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, Upload, Calendar, AlertCircle, FileCode, Info } from 'lucide-react';
 import { api } from '../services/api.js';
 import toast from 'react-hot-toast';
 
@@ -35,7 +35,7 @@ export default function UploadPage() {
       return;
     }
 
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 50 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
       toast.error('Plik jest za duży. Maksymalny rozmiar to 50MB');
       return;
@@ -74,9 +74,10 @@ export default function UploadPage() {
       
       setFile(null);
       setScheduledAt('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
-      toast.error(error.response?.data?.error || 'Nie udało się przesłać pliku');
+      const err = error as { response?: { data?: { error?: string } } };
+      toast.error(err.response?.data?.error || 'Nie udało się przesłać pliku');
     } finally {
       setUploading(false);
     }
@@ -98,20 +99,21 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Upload & Print</h1>
-        <p className="text-gray-600 mt-2">Prześlij plik G-code do druku</p>
+        <h1 className="text-3xl font-bold text-foreground">Upload & Print</h1>
+        <p className="text-muted-foreground mt-2">Prześlij plik G-code do druku</p>
       </div>
 
       {/* Upload Area */}
-      <div className="bg-white rounded-xl shadow-md p-8">
+      <div className="bg-card rounded-xl border border-border p-8">
         <div
-          className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
+          className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all ${
             dragActive
-              ? 'border-blue-500 bg-blue-50'
+              ? 'border-primary bg-primary/5'
               : file
-              ? 'border-green-500 bg-green-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-primary/50 bg-primary/5'
+              : 'border-border hover:border-muted-foreground/50'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -120,29 +122,33 @@ export default function UploadPage() {
         >
           {file ? (
             <div className="space-y-4">
-              <CheckCircle className="mx-auto text-green-600" size={48} />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20">
+                <CheckCircle className="text-primary" size={32} />
+              </div>
               <div>
-                <p className="text-lg font-semibold text-gray-900">{file.name}</p>
-                <p className="text-sm text-gray-600 mt-1">{formatFileSize(file.size)}</p>
+                <p className="text-lg font-semibold text-foreground">{file.name}</p>
+                <p className="text-sm text-muted-foreground mt-1">{formatFileSize(file.size)}</p>
               </div>
               <button
                 onClick={() => setFile(null)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Wybierz inny plik
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <Upload className="mx-auto text-gray-400" size={48} />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary rounded-2xl border border-border">
+                <Upload className="text-muted-foreground" size={32} />
+              </div>
               <div>
-                <p className="text-lg font-medium text-gray-900">
+                <p className="text-lg font-medium text-foreground">
                   Przeciągnij i upuść plik G-code
                 </p>
-                <p className="text-sm text-gray-600 mt-1">lub</p>
+                <p className="text-sm text-muted-foreground mt-1">lub</p>
               </div>
               <label className="inline-block">
-                <span className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium cursor-pointer hover:bg-blue-700 transition-colors">
+                <span className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium cursor-pointer hover:bg-primary/90 transition-colors">
                   Wybierz plik
                 </span>
                 <input
@@ -152,31 +158,33 @@ export default function UploadPage() {
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-gray-500">Maksymalny rozmiar: 50MB</p>
+              <p className="text-xs text-muted-foreground">Maksymalny rozmiar: 50MB</p>
             </div>
           )}
         </div>
 
         {/* Scheduling */}
-        <div className="mt-6 p-6 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-4">
-            <Calendar className="text-gray-600 mr-2" size={20} />
-            <h3 className="font-semibold text-gray-900">Zaplanuj druk (opcjonalnie)</h3>
+        <div className="mt-6 p-6 bg-secondary/50 rounded-xl border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-secondary rounded-lg border border-border">
+              <Calendar className="text-muted-foreground" size={18} />
+            </div>
+            <h3 className="font-semibold text-foreground">Zaplanuj druk (opcjonalnie)</h3>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <label className="block">
-              <span className="text-sm text-gray-700 mb-1 block">Data i godzina rozpoczęcia</span>
+              <span className="text-sm text-foreground mb-2 block">Data i godzina rozpoczęcia</span>
               <input
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
                 min={getMinDateTime()}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
               />
             </label>
             
-            <div className="flex items-start space-x-2 text-sm text-gray-600">
+            <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
               <p>
                 Jeśli nie wybierzesz daty, druk zostanie dodany do kolejki i rozpocznie się, gdy drukarka będzie wolna.
@@ -186,30 +194,30 @@ export default function UploadPage() {
         </div>
 
         {/* Upload Button */}
-        <div className="mt-6 flex justify-end space-x-4">
+        <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => {
               setFile(null);
               setScheduledAt('');
             }}
             disabled={!file && !scheduledAt}
-            className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2.5 text-foreground bg-secondary rounded-lg font-medium hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border border-border"
           >
             Wyczyść
           </button>
           <button
             onClick={handleUpload}
             disabled={!file || uploading}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-8 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
             {uploading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                 Przesyłanie...
               </>
             ) : (
               <>
-                <Upload size={20} className="mr-2" />
+                <Upload size={18} />
                 {scheduledAt ? 'Zaplanuj druk' : 'Prześlij i drukuj'}
               </>
             )}
@@ -218,23 +226,54 @@ export default function UploadPage() {
       </div>
 
       {/* Info Cards */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-blue-50 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-2">Akceptowane formaty</h3>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>• Pliki G-code (.gcode)</li>
-            <li>• Maksymalny rozmiar: 50MB</li>
-            <li>• Kodowanie: UTF-8</li>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+              <FileCode className="text-primary" size={18} />
+            </div>
+            <h3 className="font-semibold text-foreground">Akceptowane formaty</h3>
+          </div>
+          <ul className="text-sm text-muted-foreground space-y-2">
+            <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Pliki G-code (.gcode)
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Maksymalny rozmiar: 50MB
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Kodowanie: UTF-8
+            </li>
           </ul>
         </div>
 
-        <div className="bg-green-50 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-2">Jak to działa?</h3>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>1. Wybierz plik G-code</li>
-            <li>2. Opcjonalnie zaplanuj czas druku</li>
-            <li>3. Kliknij "Prześlij i drukuj"</li>
-            <li>4. Śledź postęp w dashboardzie</li>
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+              <Info className="text-primary" size={18} />
+            </div>
+            <h3 className="font-semibold text-foreground">Jak to działa?</h3>
+          </div>
+          <ul className="text-sm text-muted-foreground space-y-2">
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">1</span>
+              Wybierz plik G-code
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">2</span>
+              Opcjonalnie zaplanuj czas druku
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">3</span>
+              Kliknij "Prześlij i drukuj"
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-secondary text-foreground text-xs flex items-center justify-center font-medium">4</span>
+              Śledź postęp w dashboardzie
+            </li>
           </ul>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Square, RefreshCw, Calendar, FileText, Eye } from 'lucide-react';
+import { Square, RefreshCw, Calendar, FileText, Eye, ChevronDown, Layers } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +23,27 @@ export default function DashboardPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+
+  const loadMyJobs = async () => {
+    try {
+      const params = selectedStatus !== 'all' ? { status: selectedStatus, limit: 50 } : { limit: 50 };
+      const { data } = await api.getUserJobs(params);
+      setMyJobs(data.jobs);
+    } catch (error) {
+      console.error('Failed to load jobs:', error);
+      setMyJobs([]);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const { data } = await api.getUserStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+      setStats(null);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,34 +73,12 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Ładowanie danych...</p>
+          <div className="w-12 h-12 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Ładowanie danych...</p>
         </div>
       </div>
     );
   }
-
-  const loadMyJobs = async () => {
-    try {
-      const params = selectedStatus !== 'all' ? { status: selectedStatus, limit: 50 } : { limit: 50 };
-      const { data } = await api.getUserJobs(params);
-      setMyJobs(data.jobs);
-    } catch (error) {
-      console.error('Failed to load jobs:', error);
-      // Don't show toast on every poll failure
-      setMyJobs([]);
-    }
-  };
-
-  const loadStats = async () => {
-    try {
-      const { data } = await api.getUserStats();
-      setStats(data);
-    } catch (error) {
-      console.error('Failed to load stats:', error);
-      setStats(null);
-    }
-  };
 
   const handleCancelJob = async (jobId: string) => {
     if (!window.confirm('Czy na pewno chcesz anulować ten druk?')) return;
@@ -112,15 +111,15 @@ export default function DashboardPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+      case 'cancelled': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -136,140 +135,154 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Mój Dashboard</h1>
-        <div className="text-sm text-gray-600">
-          Witaj, <span className="font-semibold">{user?.firstName}</span>!
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Mój Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Witaj, <span className="text-foreground font-medium">{user?.firstName}</span>!
+          </p>
         </div>
       </div>
 
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600">Wszystkie</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600">Oczekujące</p>
-            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600">Zaplanowane</p>
-            <p className="text-2xl font-bold text-purple-600">{stats.scheduled}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600">Ukończone</p>
-            <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600">Nieudane</p>
-            <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
-          </div>
+          <StatCard label="Wszystkie" value={stats.total} color="muted" />
+          <StatCard label="Oczekujące" value={stats.pending} color="yellow" />
+          <StatCard label="Zaplanowane" value={stats.scheduled} color="violet" />
+          <StatCard label="Ukończone" value={stats.completed} color="primary" />
+          <StatCard label="Nieudane" value={stats.failed} color="destructive" />
         </div>
       )}
 
       {/* Current Job */}
       {currentJob && currentJob.userId === user?.id && (
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-          <h2 className="text-xl font-bold mb-4">Aktualny druk</h2>
-          <div className="space-y-3">
+        <div className="relative overflow-hidden bg-card rounded-xl border border-border p-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          
+          <div className="relative space-y-4">
             <div className="flex items-center justify-between">
-              <span className="font-medium">{currentJob.originalFileName}</span>
-              <span className="text-2xl font-bold">{currentJob.progress?.toFixed(1)}%</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-primary/10 rounded-lg border border-primary/20">
+                  <Layers className="text-primary" size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Aktualny druk</h2>
+                  <p className="text-sm text-muted-foreground">{currentJob.originalFileName}</p>
+                </div>
+              </div>
+              <span className="text-3xl font-bold text-primary tabular-nums">
+                {currentJob.progress?.toFixed(1)}%
+              </span>
             </div>
-            <div className="w-full bg-blue-300 bg-opacity-50 rounded-full h-4">
+            
+            <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
               <div
-                className="bg-white h-4 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
                 style={{ width: `${currentJob.progress || 0}%` }}
               />
             </div>
+            
             {currentJob.printTimeLeft && (
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Czas drukowania: {Math.round((currentJob.printTime || 0) / 60)} min</span>
                 <span>Pozostało: {Math.round(currentJob.printTimeLeft / 60)} min</span>
               </div>
             )}
-            <button
-              onClick={() => handleCancelJob(currentJob.id)}
-              disabled={loading}
-              className="mt-4 w-full bg-white text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-50 disabled:opacity-50"
-            >
-              <Square size={18} className="inline mr-2" />
-              Zatrzymaj druk
-            </button>
             
-            <button
-              onClick={() => navigate(`/print/${currentJob.id}`)}
-              className="mt-2 w-full bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
-            >
-              <Eye size={18} className="inline mr-2" />
-              Kontrola druku
-            </button>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => handleCancelJob(currentJob.id)}
+                disabled={loading}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
+              >
+                <Square size={18} />
+                Zatrzymaj druk
+              </button>
+              <button
+                onClick={() => navigate(`/print`)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-foreground border border-border rounded-lg font-medium hover:bg-secondary/80 transition-colors"
+              >
+                <Eye size={18} />
+                Kontrola druku
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Jobs List */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Moje druki</h2>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {Object.entries(statusLabels).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Moje druki</h2>
+            <p className="text-sm text-muted-foreground">Historia wszystkich zadań</p>
+          </div>
+          <div className="relative">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="appearance-none px-4 py-2 pr-10 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors cursor-pointer"
+            >
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
 
-        {myJobs.length > 0 ? (
-          <div className="space-y-3">
-            {myJobs.map((job) => (
-              <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <FileText className="text-gray-400" size={20} />
-                      <h3 className="font-semibold text-gray-900">{job.originalFileName}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
-                        {statusLabels[job.status] || job.status}
-                      </span>
+        <div className="divide-y divide-border">
+          {myJobs.length > 0 ? (
+            myJobs.map((job) => (
+              <div key={job.id} className="px-6 py-4 hover:bg-secondary/30 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4 min-w-0 flex-1">
+                    <div className="p-2 bg-secondary rounded-lg">
+                      <FileText className="text-muted-foreground" size={20} />
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="font-medium text-foreground truncate">{job.originalFileName}</h3>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(job.status)}`}>
+                          {statusLabels[job.status] || job.status}
+                        </span>
+                      </div>
 
-                    <div className="text-sm text-gray-600 space-y-1">
-                      {job.scheduledAt && (
-                        <div className="flex items-center">
-                          <Calendar size={14} className="mr-2" />
-                          <span>Zaplanowano: {formatDateTimeSafe(job.scheduledAt)}</span>
-                        </div>
-                      )}
-                      {job.createdAt && (
-                        <p>Utworzono: {formatDateSafe(job.createdAt)}</p>
-                      )}
-                      {job.progress !== undefined && job.status === 'printing' && (
-                        <div className="mt-2">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${job.progress}%` }}
-                            />
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {job.scheduledAt && (
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} />
+                            <span>Zaplanowano: {formatDateTimeSafe(job.scheduledAt)}</span>
                           </div>
-                        </div>
-                      )}
-                      {job.failureReason && (
-                        <p className="text-red-600 mt-1">Błąd: {job.failureReason}</p>
-                      )}
+                        )}
+                        {job.createdAt && (
+                          <p>Utworzono: {formatDateSafe(job.createdAt)}</p>
+                        )}
+                        {job.progress !== undefined && job.status === 'printing' && (
+                          <div className="mt-2 w-full max-w-xs">
+                            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-blue-500/80 to-blue-500 rounded-full transition-all"
+                                style={{ width: `${job.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {job.failureReason && (
+                          <p className="text-destructive mt-1">Błąd: {job.failureReason}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex space-x-2 ml-4">
+                  <div className="flex gap-1">
                     {job.status === 'printing' && (
                       <button
-                        onClick={() => navigate(`/print/${job.id}`)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        onClick={() => navigate(`/print`)}
+                        className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                         title="Kontrola druku"
                       >
                         <Eye size={18} />
@@ -279,7 +292,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => handleRetryJob(job.id)}
                         disabled={loading}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-50"
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
                         title="Ponów"
                       >
                         <RefreshCw size={18} />
@@ -289,7 +302,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => handleCancelJob(job.id)}
                         disabled={loading}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
                         title="Anuluj"
                       >
                         <Square size={18} />
@@ -298,15 +311,40 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <FileText className="mx-auto text-gray-400 mb-4" size={48} />
-            <p className="text-gray-500">Brak druków do wyświetlenia</p>
-          </div>
-        )}
+            ))
+          ) : (
+            <div className="px-6 py-16 text-center">
+              <div className="p-4 bg-secondary/50 rounded-full w-fit mx-auto mb-4">
+                <FileText className="text-muted-foreground" size={32} />
+              </div>
+              <p className="text-muted-foreground">Brak druków do wyświetlenia</p>
+            </div>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
+
+interface StatCardProps {
+  label: string;
+  value: number;
+  color: 'primary' | 'yellow' | 'violet' | 'destructive' | 'muted';
+}
+
+function StatCard({ label, value, color }: StatCardProps) {
+  const colorStyles = {
+    primary: 'text-primary',
+    yellow: 'text-yellow-400',
+    violet: 'text-violet-400',
+    destructive: 'text-destructive',
+    muted: 'text-foreground',
+  };
+
+  return (
+    <div className="bg-card rounded-xl border border-border p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={`text-2xl font-bold mt-1 tabular-nums ${colorStyles[color]}`}>{value}</p>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Printer } from 'lucide-react';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import toast from 'react-hot-toast';
@@ -48,35 +48,51 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-        {status === 'loading' && (
-          <>
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900">Weryfikacja...</h2>
-          </>
-        )}
-        {status === 'success' && (
-          <>
-            <CheckCircle className="mx-auto text-green-600 mb-4" size={64} />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Email zweryfikowany!</h2>
-            <p className="text-gray-600">
-              {localStorage.getItem('accessToken') 
-                ? 'Logowanie i przekierowywanie do dashboardu...' 
-                : 'Przekierowywanie do logowania...'}
-            </p>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <XCircle className="mx-auto text-red-600 mb-4" size={64} />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Błąd weryfikacji</h2>
-            <p className="text-gray-600 mb-4">Link jest nieprawidłowy lub wygasł</p>
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Przejdź do logowania
-            </Link>
-          </>
-        )}
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="bg-card rounded-2xl border border-border p-8 text-center shadow-xl shadow-black/5">
+          {status === 'loading' && (
+            <>
+              <div className="w-16 h-16 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto mb-6" />
+              <h2 className="text-2xl font-bold text-foreground">Weryfikacja...</h2>
+              <p className="text-muted-foreground mt-2">Proszę czekać</p>
+            </>
+          )}
+          {status === 'success' && (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20 mb-6">
+                <CheckCircle className="text-primary" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Email zweryfikowany!</h2>
+              <p className="text-muted-foreground">
+                {localStorage.getItem('accessToken') 
+                  ? 'Logowanie i przekierowywanie do dashboardu...' 
+                  : 'Przekierowywanie do logowania...'}
+              </p>
+            </>
+          )}
+          {status === 'error' && (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-destructive/10 rounded-2xl border border-destructive/20 mb-6">
+                <XCircle className="text-destructive" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Błąd weryfikacji</h2>
+              <p className="text-muted-foreground mb-6">Link jest nieprawidłowy lub wygasł</p>
+              <Link 
+                to="/login" 
+                className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Przejdź do logowania
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Branding */}
+        <div className="flex items-center justify-center gap-2 mt-6 text-muted-foreground">
+          <Printer size={16} />
+          <span className="text-sm">AddiPi 3D Printer System</span>
+        </div>
       </div>
     </div>
   );

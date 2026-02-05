@@ -21,13 +21,15 @@ export function EmptyState({ icon = 'inbox', title, description, action }: Empty
 
   return (
     <div className="text-center py-12">
-      <Icon className="mx-auto text-gray-400 mb-4" size={48} />
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
-      {description && <p className="text-gray-500 mb-4">{description}</p>}
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary rounded-2xl border border-border mb-4">
+        <Icon className="text-muted-foreground" size={32} />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+      {description && <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{description}</p>}
       {action && (
         <button
           onClick={action.onClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
         >
           {action.label}
         </button>

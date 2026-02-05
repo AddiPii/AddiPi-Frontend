@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, Printer } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import toast from 'react-hot-toast';
 
@@ -23,66 +23,89 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <LogIn className="text-blue-600" size={32} />
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        {/* Card */}
+        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl shadow-black/5">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20 mb-4">
+              <LogIn className="text-primary" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Zaloguj się</h2>
+            <p className="text-muted-foreground mt-2">Witaj ponownie w AddiPi</p>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Zaloguj się</h2>
-          <p className="text-gray-600 mt-2">Witaj ponownie!</p>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor='email' className="block text-sm font-medium text-foreground">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <input
+                  id='email'
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  placeholder="twoj@email.uwr.edu.pl"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor='password' className="block text-sm font-medium text-foreground">
+                Hasło
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                <input
+                  id='password'
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-11 pr-4 py-3 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Logowanie...
+                </>
+              ) : (
+                'Zaloguj się'
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <p className="text-center text-sm text-muted-foreground">
+              Nie masz konta?{' '}
+              <Link to="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                Zarejestruj się
+              </Link>
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="twoj@email.uwr.edu.pl"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Hasło
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? 'Logowanie...' : 'Zaloguj się'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Nie masz konta?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-            Zarejestruj się
-          </Link>
-        </p>
+        {/* Branding */}
+        <div className="flex items-center justify-center gap-2 mt-10 text-muted-foreground">
+          <Printer size={16} />
+          <span className="text-sm">AddiPi 3D Printer System</span>
+        </div>
       </div>
     </div>
   );
