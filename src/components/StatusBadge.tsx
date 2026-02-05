@@ -1,8 +1,12 @@
+import { useTranslation } from 'react-i18next';
+
 interface StatusBadgeProps {
   status: string;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
+  const { t } = useTranslation();
+
   const getStyle = () => {
     switch (status) {
       case 'completed': return 'bg-primary/10 text-primary border-primary/20';
@@ -17,12 +21,12 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
   const getLabel = () => {
     const labels: Record<string, string> = {
-      completed: 'Ukończone',
-      failed: 'Nieudane',
-      printing: 'Drukuje',
-      pending: 'Oczekujące',
-      scheduled: 'Zaplanowane',
-      cancelled: 'Anulowane',
+      completed: t('dashboard.status.completed'),
+      failed: t('dashboard.status.failed'),
+      printing: t('dashboard.status.printing'),
+      pending: t('dashboard.status.pending'),
+      scheduled: t('dashboard.status.scheduled'),
+      cancelled: t('dashboard.status.cancelled'),
     };
     return labels[status] || status;
   };
