@@ -1,20 +1,27 @@
 interface CardProps {
   title?: string;
+  description?: string;
   children: React.ReactNode;
   className?: string;
   actions?: React.ReactNode;
+  noPadding?: boolean;
 }
 
-export function Card({ title, children, className = '', actions }: CardProps) {
+export function Card({ title, description, children, className = '', actions, noPadding = false }: CardProps) {
   return (
-    <div className={`bg-white rounded-xl shadow-md overflow-hidden ${className}`}>
+    <div className={`bg-card rounded-xl border border-border overflow-hidden ${className}`}>
       {title && (
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            {description && (
+              <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+            )}
+          </div>
           {actions && <div>{actions}</div>}
         </div>
       )}
-      <div className="p-6">{children}</div>
+      <div className={noPadding ? '' : 'p-6'}>{children}</div>
     </div>
   );
 }
