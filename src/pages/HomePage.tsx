@@ -77,11 +77,23 @@ export default function HomePage() {
     }
   };
 
+  const getJobStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      completed: t('dashboard.status.completed'),
+      failed: t('dashboard.status.failed'),
+      printing: t('dashboard.status.printing'),
+      pending: t('dashboard.status.pending'),
+      scheduled: t('dashboard.status.scheduled'),
+      cancelled: t('dashboard.status.cancelled'),
+    };
+    return labels[status] || status;
+  };
+
   const statusIndicator = getStatusIndicator(printerStatus?.printerState, printerStatus?.isPrinting);
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
+      {/* Hero Section - pozostaje bez zmian */}
       <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 lg:p-12">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -275,7 +287,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getJobStatusStyle(job.status)}`}>
-                        {job.status}
+                        {getJobStatusLabel(job.status)}
                       </span>
                       {job.completedAt && (
                         <p className="text-xs text-muted-foreground">
@@ -312,7 +324,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getJobStatusStyle(job.status)}`}>
-                        {job.status}
+                        {getJobStatusLabel(job.status)}
                       </span>
                       {job.scheduledAt && (
                         <p className="text-xs text-muted-foreground">
