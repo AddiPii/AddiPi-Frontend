@@ -3,15 +3,15 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const getColor = () => {
+  const getStyle = () => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'printing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
+      case 'cancelled': return 'bg-muted text-muted-foreground border-border';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -28,7 +28,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getColor()}`}>
+    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStyle()}`}>
       {getLabel()}
     </span>
   );
