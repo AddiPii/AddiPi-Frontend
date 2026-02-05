@@ -1,97 +1,94 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { CheckCircle, XCircle, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { CheckCircle, XCircle, Loader } from 'lucide-react';
 import { api } from '../services/api';
-import { useStore } from '../store/useStore';
-import toast from 'react-hot-toast';
 
 export default function VerifyEmailPage() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { setUser } = useStore();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
+    const verifyEmail = async () => {
+      const token = searchParams.get('token');
 
-    if (token) {
-      verifyEmail(token);
-    } else {
-      setStatus('error');
-    }
-  }, []);
-
-  const verifyEmail = async (token: string) => {
-    try {
-      const response = await api.verifyEmail(token);
-      
-      const data = response.data;
-      
-      if (data?.accessToken && data?.refreshToken && data?.user) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        setUser(data.user);
-        
-        setStatus('success');
-        toast.success('Email zweryfikowany! Logowanie...');
-        
-        setTimeout(() => navigate('/dashboard'), 2000);
-      } else {
-        setStatus('success');
-        toast.success('Email zweryfikowany! Możesz się teraz zalogować.');
-        setTimeout(() => navigate('/login'), 3000);
+      if (!token) {
+        setStatus('error');
+        setMessage(t('verify.errorNoToken'));
+        return;
       }
-    } catch (error) {
-      console.error('Verification error:', error);
-      setStatus('error');
-    }
-  };
+
+      try {
+        await api.verifyEmail(token);
+        setStatus('success');
+        setMessage(t('verify.success'));
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } catch (error: any) {
+        setStatus('error');
+        setMessage(error.response?.data?.error || t('verify.error'));
+      }
+    };
+
+    verifyEmail();
+  }, [searchParams, navigate, t]);
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-card rounded-2xl border border-border p-8 text-center shadow-xl shadow-black/5">
+        <div className="bg-card rounded-xl border border-border p-8 text-center space-y-6">
           {status === 'loading' && (
             <>
-              <div className="w-16 h-16 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-foreground">Weryfikacja...</h2>
-              <p className="text-muted-foreground mt-2">Proszę czekać</p>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full">
+                <Loader className="text-primary animate-spin" size={32} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  {t('verify.verifying')}
+                </h1>
+                <p className="text-muted-foreground">{t('verify.pleaseWait')}</p>
+              </div>
             </>
           )}
+
           {status === 'success' && (
             <>
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl border border-primary/20 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full border border-primary/20">
                 <CheckCircle className="text-primary" size={32} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Email zweryfikowany!</h2>
-              <p className="text-muted-foreground">
-                {localStorage.getItem('accessToken') 
-                  ? 'Logowanie i przekierowywanie do dashboardu...' 
-                  : 'Przekierowywanie do logowania...'}
-              </p>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  {t('verify.successTitle')}
+                </h1>
+                <p className="text-muted-foreground mb-2">{message}</p>
+                <p className="text-sm text-muted-foreground">{t('verify.redirecting')}</p>
+              </div>
             </>
           )}
+
           {status === 'error' && (
             <>
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-destructive/10 rounded-2xl border border-destructive/20 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-destructive/10 rounded-full border border-destructive/20">
                 <XCircle className="text-destructive" size={32} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Błąd weryfikacji</h2>
-              <p className="text-muted-foreground mb-6">Link jest nieprawidłowy lub wygasł</p>
-              <Link 
-                to="/login" 
-                className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Przejdź do logowania
-              </Link>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  {t('verify.errorTitle')}
+                </h1>
+                <p className="text-muted-foreground mb-4">{message}</p>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                >
+                  {t('verify.goToLogin')}
+                </button>
+              </div>
             </>
           )}
-        </div>
-
-        {/* Branding */}
-        <div className="flex items-center justify-center gap-2 mt-6 text-muted-foreground">
-          <Printer size={16} />
-          <span className="text-sm">AddiPi 3D Printer System</span>
         </div>
       </div>
     </div>

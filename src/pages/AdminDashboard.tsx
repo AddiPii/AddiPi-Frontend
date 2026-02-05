@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users, FileText, Trash2, RefreshCw, Shield, UserX, Square, ChevronDown } from 'lucide-react';
 import { api } from '../services/api';
 import type { User, Job } from '../types';
@@ -14,6 +15,7 @@ interface ApiError {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'users' | 'jobs'>('users');
   const [users, setUsers] = useState<User[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -33,7 +35,7 @@ export default function AdminDashboard() {
       const { data } = await api.getAllUsers({ limit: 100 });
       setUsers(data.users);
     } catch {
-      toast.error('Nie udało się załadować użytkowników');
+      toast.error(t('admin.errorLoadUsers'));
     }
   };
 
@@ -43,7 +45,7 @@ export default function AdminDashboard() {
       const { data } = await api.getAllJobs(params);
       setJobs(data.jobs);
     } catch {
-      toast.error('Nie udało się załadować zadań');
+      toast.error(t('admin.errorLoadJobs'));
     }
   };
 
@@ -52,43 +54,43 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       await api.updateUserRole(userId, newRole);
-      toast.success(`Rola zmieniona na ${newRole}`);
+      toast.success(t('admin.roleChanged', { role: newRole }));
       loadUsers();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się zmienić roli');
+      toast.error(err.response?.data?.error || t('admin.errorChangeRole'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteUser = async (userId: string, email: string) => {
-    if (!window.confirm(`Czy na pewno chcesz usunąć użytkownika ${email}?`)) return;
+    if (!window.confirm(t('admin.confirmDeleteUser', { email }))) return;
 
     setLoading(true);
     try {
       await api.deleteUser(userId);
-      toast.success('Użytkownik został usunięty');
+      toast.success(t('admin.userDeleted'));
       loadUsers();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się usunąć użytkownika');
+      toast.error(err.response?.data?.error || t('admin.errorDeleteUser'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelJob = async (jobId: string) => {
-    if (!window.confirm('Czy na pewno chcesz anulować ten druk?')) return;
+    if (!window.confirm(t('admin.confirmCancelJob'))) return;
 
     setLoading(true);
     try {
       await api.cancelJob(jobId);
-      toast.success('Druk został anulowany');
+      toast.success(t('admin.jobCancelled'));
       loadJobs();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się anulować druku');
+      toast.error(err.response?.data?.error || t('admin.errorCancelJob'));
     } finally {
       setLoading(false);
     }
@@ -98,27 +100,27 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       await api.retryJob(jobId);
-      toast.success('Druk został ponownie dodany do kolejki');
+      toast.success(t('admin.jobRetried'));
       loadJobs();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się ponowić druku');
+      toast.error(err.response?.data?.error || t('admin.errorRetryJob'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!window.confirm('Czy na pewno chcesz usunąć to zadanie?')) return;
+    if (!window.confirm(t('admin.confirmDeleteJob'))) return;
 
     setLoading(true);
     try {
       await api.deleteJob(jobId);
-      toast.success('Zadanie zostało usunięte');
+      toast.success(t('admin.jobDeleted'));
       loadJobs();
     } catch (error) {
       const err = error as ApiError;
-      toast.error(err.response?.data?.error || 'Nie udało się usunąć zadania');
+      toast.error(err.response?.data?.error || t('admin.errorDeleteJob'));
     } finally {
       setLoading(false);
     }
@@ -136,17 +138,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const statusLabels: Record<string, string> = {
+    all: t('dashboard.status.all'),
+    pending: t('dashboard.status.pending'),
+    scheduled: t('dashboard.status.scheduled'),
+    printing: t('dashboard.status.printing'),
+    completed: t('dashboard.status.completed'),
+    failed: t('dashboard.status.failed'),
+    cancelled: t('dashboard.status.cancelled')
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Panel Administratora</h1>
-          <p className="text-muted-foreground mt-1">Zarządzaj użytkownikami i zadaniami druku</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('admin.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('admin.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
           <Shield className="text-primary" size={18} />
-          <span className="text-sm font-medium text-primary">Administrator</span>
+          <span className="text-sm font-medium text-primary">{t('admin.administrator')}</span>
         </div>
       </div>
 
@@ -162,7 +174,7 @@ export default function AdminDashboard() {
             }`}
           >
             <Users size={18} />
-            Użytkownicy ({users.length})
+            {t('admin.users')} ({users.length})
           </button>
           <button
             onClick={() => setActiveTab('jobs')}
@@ -173,7 +185,7 @@ export default function AdminDashboard() {
             }`}
           >
             <FileText size={18} />
-            Zadania ({jobs.length})
+            {t('admin.jobs')} ({jobs.length})
           </button>
         </nav>
       </div>
@@ -185,12 +197,24 @@ export default function AdminDashboard() {
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-secondary/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Użytkownik</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Rola</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Data utworzenia</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Akcje</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('admin.user')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('profile.email')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('profile.role')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('profile.status')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('admin.dateCreated')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {t('admin.actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -219,7 +243,7 @@ export default function AdminDashboard() {
                           ? 'bg-primary/10 text-primary border-primary/20' 
                           : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                       }`}>
-                        {user.isVerified ? 'Zweryfikowany' : 'Niezweryfikowany'}
+                        {user.isVerified ? t('profile.verified') : t('profile.notVerified')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
@@ -231,7 +255,7 @@ export default function AdminDashboard() {
                           onClick={() => handleToggleRole(user.id, user.role)}
                           disabled={loading}
                           className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
-                          title={user.role === 'admin' ? 'Odbierz uprawnienia admina' : 'Nadaj uprawnienia admina'}
+                          title={user.role === 'admin' ? t('admin.revokeAdmin') : t('admin.grantAdmin')}
                         >
                           <Shield size={18} />
                         </button>
@@ -239,7 +263,7 @@ export default function AdminDashboard() {
                           onClick={() => handleDeleteUser(user.id, user.email)}
                           disabled={loading}
                           className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
-                          title="Usuń użytkownika"
+                          title={t('admin.deleteUser')}
                         >
                           <UserX size={18} />
                         </button>
@@ -263,13 +287,9 @@ export default function AdminDashboard() {
                 onChange={(e) => setJobStatus(e.target.value)}
                 className="appearance-none px-4 py-2 pr-10 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors cursor-pointer"
               >
-                <option value="all">Wszystkie</option>
-                <option value="pending">Oczekujące</option>
-                <option value="scheduled">Zaplanowane</option>
-                <option value="printing">Drukuje</option>
-                <option value="completed">Ukończone</option>
-                <option value="failed">Nieudane</option>
-                <option value="cancelled">Anulowane</option>
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
               </select>
               <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
@@ -280,12 +300,24 @@ export default function AdminDashboard() {
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-secondary/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nazwa pliku</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Użytkownik</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Postęp</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Data utworzenia</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Akcje</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('admin.fileName')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('admin.user')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('profile.status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('admin.progress')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('admin.dateCreated')}
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('admin.actions')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -300,7 +332,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(job.status)}`}>
-                          {job.status}
+                          {statusLabels[job.status] || job.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -328,7 +360,7 @@ export default function AdminDashboard() {
                               onClick={() => handleRetryJob(job.id)}
                               disabled={loading}
                               className="p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors"
-                              title="Ponów"
+                              title={t('dashboard.retry')}
                             >
                               <RefreshCw size={18} />
                             </button>
@@ -338,7 +370,7 @@ export default function AdminDashboard() {
                               onClick={() => handleCancelJob(job.id)}
                               disabled={loading}
                               className="p-2 text-yellow-400 hover:bg-yellow-500/10 rounded-lg disabled:opacity-50 transition-colors"
-                              title="Anuluj"
+                              title={t('common.cancel')}
                             >
                               <Square size={18} />
                             </button>
@@ -348,7 +380,7 @@ export default function AdminDashboard() {
                               onClick={() => handleDeleteJob(job.id)}
                               disabled={loading}
                               className="p-2 text-destructive hover:bg-destructive/10 rounded-lg disabled:opacity-50 transition-colors"
-                              title="Usuń"
+                              title={t('common.delete')}
                             >
                               <Trash2 size={18} />
                             </button>

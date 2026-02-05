@@ -54,6 +54,11 @@ AddiPi Frontend is a modern web application built with React + TypeScript that s
 - **Dashboard** - current printer state and job queue view
 - **User Profile** - editing personal information
 - **Real-time Status** - tracking print progress with 5-second updates
+- **Responsive Design** - optimized UI for mobile and desktop with adaptive logo positioning
+- **Email Verification** - confirmation of email during registration process
+- **Multi-language Support** - Polish and English interface with i18next
+- **Dark/Light Theme** - toggle between dark and light mode with persistent settings
+- **Footer Navigation** - links to main sections, contact info, and social media
 
 ### For Administrators:
 - **Admin Panel** - comprehensive view of all jobs and users
@@ -85,6 +90,7 @@ AddiPi Frontend is a modern web application built with React + TypeScript that s
 
 ### Utilities:
 - **date-fns 3.3** - date operations
+- **i18next 23.x** & **react-i18next** - internationalization (i18n) for multi-language support
 - **ESLint** - code linting
 - **PostCSS** - CSS processing
 
@@ -368,6 +374,27 @@ Badge with colored job status indicator:
 - `failed` 🔴 - failed
 - `cancelled` ⚫ - cancelled
 
+#### LanguageToggle.tsx
+Language switcher component:
+- Toggle between Polish (PL) and English (EN)
+- Uses i18next for language switching
+- Integrated with Zustand store
+
+#### ThemeToggle.tsx
+Theme switcher component:
+- Toggle between dark and light modes
+- Uses Tailwind CSS dark mode class
+- Persists preference to localStorage via Zustand
+- Shows Sun icon in dark mode, Moon icon in light mode
+
+#### Footer
+Main application footer with:
+- Logo and brief description
+- Navigation links to main sections
+- Contact information and social media links (GitHub, LinkedIn)
+- Copyright information
+- Responsive grid layout (adapts to mobile/desktop)
+
 ## 🗺 Routing
 
 Application uses React Router v6 with the following routes:
@@ -378,6 +405,7 @@ Application uses React Router v6 with the following routes:
 | `/login` | LoginPage | Public | Login |
 | `/register` | RegisterPage | Public | Registration |
 | `/verify-email` | VerifyEmailPage | Public | Email verification |
+| `/verify-email-info` | VerifyEmailInfoPage | Public | Email verification info |
 | `/dashboard` | DashboardPage | Protected | User dashboard |
 | `/upload` | UploadPage | Protected | File upload |
 | `/profile` | ProfilePage | Protected | User profile |
@@ -735,6 +763,11 @@ AddiPi Frontend to nowoczesna aplikacja webowa napisana w React + TypeScript, kt
 - **Dashboard** - widok bieżącego stanu drukarki i kolejki zadań
 - **Profil użytkownika** - edycja danych osobowych
 - **Status w czasie rzeczywistym** - śledzenie postępu drukowania z aktualizacją co 5 sekund
+- **Responsywny design** - zoptymalizowany UI dla urządzeń mobilnych i desktopowych z adaptacyjnym pozycjonowaniem logo
+- **Weryfikacja email** - potwierdzenie adresu email podczas procesu rejestracji
+- **Obsługa wielojęzyczna** - interfejs w j. polskim i angielskim z i18next
+- **Tryb ciemny/jasny** - przełączanie pomiędzy trybami ze zapisem ustawień
+- **Nawigacja w stopce** - linki do głównych sekcji, dane kontaktowe i media społeczne
 
 ### Dla administratorów:
 - **Panel administracyjny** - kompleksowy widok wszystkich zadań i użytkowników
@@ -766,6 +799,7 @@ AddiPi Frontend to nowoczesna aplikacja webowa napisana w React + TypeScript, kt
 
 ### Narzędzia pomocnicze:
 - **date-fns 3.3** - operacje na datach
+- **i18next 23.x** & **react-i18next** - internacjonalizacja (i18n) dla obsługi wielu języków
 - **ESLint** - linting kodu
 - **PostCSS** - przetwarzanie CSS
 
@@ -1049,6 +1083,27 @@ Badge z kolorowym wskaźnikiem statusu zadania:
 - `failed` 🔴 - nieudane
 - `cancelled` ⚫ - anulowane
 
+#### LanguageToggle.tsx
+Komponent przełącznika języka:
+- Przełączanie pomiędzy j. polskim (PL) i angielskim (EN)
+- Używa i18next do przełączania języka
+- Zintegrowany ze store Zustand
+
+#### ThemeToggle.tsx
+Komponent przełącznika motywu:
+- Przełączanie pomiędzy trybem ciemnym i jasnym
+- Używa Tailwind CSS dark mode class
+- Zapisuje preferencję do localStorage przez Zustand
+- Wyświetla ikonę Słońca w trybie ciemnym, Księżyca w trybie jasnym
+
+#### Footer
+Główna stopka aplikacji zawierająca:
+- Logo i krótki opis
+- Linki nawigacyjne do głównych sekcji
+- Dane kontaktowe i linki do mediów społecznych (GitHub, LinkedIn)
+- Informacja o prawach autorskich
+- Responsywny grid layout (dostosowuje się na mobile/desktop)
+
 ## 🗺 Routing
 
 Aplikacja używa React Router v6 z następującymi trasami:
@@ -1059,6 +1114,7 @@ Aplikacja używa React Router v6 z następującymi trasami:
 | `/login` | LoginPage | Publiczny | Logowanie |
 | `/register` | RegisterPage | Publiczny | Rejestracja |
 | `/verify-email` | VerifyEmailPage | Publiczny | Weryfikacja email |
+| `/verify-email-info` | VerifyEmailInfoPage | Publiczny | Informacja o weryfikacji email |
 | `/dashboard` | DashboardPage | Chroniony | Dashboard użytkownika |
 | `/upload` | UploadPage | Chroniony | Upload plików |
 | `/profile` | ProfilePage | Chroniony | Profil użytkownika |
