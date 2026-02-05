@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Printer, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge, ChevronRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { ConnectionStatus } from './ConnectionStatus';
 import toast from 'react-hot-toast';
