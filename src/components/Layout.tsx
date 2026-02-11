@@ -60,9 +60,9 @@ export default function Layout() {
               <Link to="/" className="flex items-center group ml-[-12px]">
                 <div className="relative">
                   <div className="absolute inset-3 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-colors" />
-                  <img src="images/logo-transparent.png" className='relative w-16' alt="AddiPi" />
+                  <img src="images/logo-transparent.png" className='w-16 hidden relative sm:block' alt="AddiPi" />
                 </div>
-                <span className="ml-0 text-xl font-semibold text-foreground tracking-tight">
+                <span className="ml-2 sm:ml-0 text-xl font-semibold text-foreground tracking-tight">
                   AddiPi
                 </span>
               </Link>
