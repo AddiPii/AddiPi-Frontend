@@ -8,6 +8,7 @@
 ![License](https://img.shields.io/badge/license-Private-red)
 
 User interface for the AddiPi 3D printer management system - a modern web application for managing print jobs, monitoring printer status, and user administration.
+Live demo: [AddiPi](https://addipi.vercel.app/)
 
 ## 📋 Table of Contents
 
