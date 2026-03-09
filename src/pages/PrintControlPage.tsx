@@ -187,9 +187,9 @@ export default function PrintControlPage() {
               </div>
             </div>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-              cameraUrl ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'
+              cameraUrl && !cameraError ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground border-border'
             }`}>
-              {cameraUrl ? t('printControl.online') : t('printControl.offline')}
+              {cameraUrl && !cameraError ? t('printControl.online') : t('printControl.offline')}
             </span>
           </div>
           
@@ -223,7 +223,10 @@ export default function PrintControlPage() {
                   src={`${cameraUrl}/?action=stream`}
                   alt="Camera feed"
                   className="w-full h-full object-cover"
-                  onError={() => setCameraError(true)}
+                  onError={() => {
+                    setCameraError(true)
+                    setCameraUrl(null)
+                  }}
                 />
               ) : (
                 <div className="text-center py-8">
@@ -375,7 +378,10 @@ export default function PrintControlPage() {
                   src={`${cameraUrl}/?action=stream`}
                   alt="Camera feed"
                   className="w-full h-full object-cover"
-                  onError={() => setCameraError(true)}
+                  onError={() => {
+                    setCameraError(true)
+                    setCameraUrl(null)
+                  }}
                 />
               ) : (
                 <div className="text-center py-8">
