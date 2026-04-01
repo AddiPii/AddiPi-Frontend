@@ -67,6 +67,8 @@
     "status": {
       "all": "All",
       "pending": "Pending",
+      "waiting_for_printer_ready": "Waiting for printer ready",
+      "delayed": "Delayed",
       "scheduled": "Scheduled",
       "printing": "Printing",
       "completed": "Completed",
@@ -283,6 +285,13 @@
     "stopSuccess": "Print has been stopped",
     "stopError": "Failed to stop print",
     "resumeSuccess": "Print has been resumed and added to queue",
-    "resumeError": "Failed to resume print"
+    "resumeError": "Failed to resume print",
+    "confirmReadyTitle": "Confirm printer readiness",
+    "confirmReadyMessage": "The printer will be marked as ready for the next job. Make sure the bed is clean, there is no completed print left, and filament condition is verified.",
+    "confirmReadyButton": "Confirm readiness",
+    "confirmReadySuccess": "Printer readiness confirmed. Starting print.",
+    "confirmReadyError": "Failed to confirm printer readiness.",
+    "waitingSince": "Waiting since",
+    "delayedAt": "Delayed at"
   }
 }
