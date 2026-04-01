@@ -164,6 +164,10 @@ class ApiClient {
     return this.printerClient.post(`/printer/jobs/${jobId}/retry`);
   }
 
+  async confirmPrinterReady(jobId: string) {
+    return this.printerClient.post(`/printer/jobs/${jobId}/confirm-ready`);
+  }
+
   async deleteJob(jobId: string) {
     return this.printerClient.delete(`/printer/jobs/${jobId}`);
   }
