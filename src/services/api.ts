@@ -13,7 +13,7 @@ import type {
 
 const AUTH_URL = `https://addipi-auth-service.vercel.app`;
 const USER_URL = `https://addipi-user-service.vercel.app`;
-const PRINTER_URL = `https://addipi-printer-service.vercel.app`;
+const PRINTER_URL = `https://addipi-printer-service-git-dev-28e89f-oliwers-projects-d5e8db11.vercel.app`;
 const FILES_URL = `https://addipi-files-service.vercel.app`;
 
 class ApiClient {
