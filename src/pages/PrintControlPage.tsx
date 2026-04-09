@@ -55,7 +55,7 @@ export default function PrintControlPage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [requestedJobId]);
+  }, []);
 
   const loadJobData = async () => {
     try {
