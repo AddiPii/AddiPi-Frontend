@@ -119,6 +119,8 @@ export default function DashboardPage() {
       case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'waiting_for_printer_ready': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'delayed': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
       case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
       case 'cancelled': return 'bg-muted text-muted-foreground border-border';
       default: return 'bg-muted text-muted-foreground border-border';
@@ -128,12 +130,17 @@ export default function DashboardPage() {
   const statusLabels: Record<string, string> = {
     all: t('dashboard.status.all'),
     pending: t('dashboard.status.pending'),
+    waiting_for_printer_ready: t('dashboard.status.waiting_for_printer_ready'),
+    delayed: t('dashboard.status.delayed'),
     scheduled: t('dashboard.status.scheduled'),
     printing: t('dashboard.status.printing'),
     completed: t('dashboard.status.completed'),
     failed: t('dashboard.status.failed'),
     cancelled: t('dashboard.status.cancelled')
   };
+
+  const isCurrentJobPrinting = currentJob?.status === 'printing';
+  const currentJobStatusLabel = currentJob ? (statusLabels[currentJob.status] || currentJob.status) : '';
 
   return (
     <div className="space-y-6">
@@ -175,19 +182,31 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{currentJob.originalFileName}</p>
                 </div>
               </div>
-              <span className="text-3xl font-bold text-primary tabular-nums">
-                {currentJob.progress?.toFixed(1)}%
-              </span>
+              {isCurrentJobPrinting ? (
+                <span className="text-3xl font-bold text-primary tabular-nums">
+                  {currentJob.progress?.toFixed(1)}%
+                </span>
+              ) : (
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(currentJob.status)}`}>
+                  {currentJobStatusLabel}
+                </span>
+              )}
             </div>
             
-            <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
-                style={{ width: `${currentJob.progress || 0}%` }}
-              />
-            </div>
+            {isCurrentJobPrinting ? (
+              <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
+                  style={{ width: `${currentJob.progress || 0}%` }}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {currentJobStatusLabel}
+              </p>
+            )}
             
-            {currentJob.printTimeLeft && (
+            {isCurrentJobPrinting && currentJob.printTimeLeft && (
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>{t('home.printTime')}: {Math.round((currentJob.printTime || 0) / 60)} {t('home.min')}</span>
                 <span>{t('home.timeRemaining')}: {Math.round(currentJob.printTimeLeft / 60)} {t('home.min')}</span>
@@ -204,7 +223,7 @@ export default function DashboardPage() {
                 {t('dashboard.stopPrint')}
               </button>
               <button
-                onClick={() => navigate(`/print`)}
+                onClick={() => navigate(`/print?jobId=${encodeURIComponent(currentJob.id)}`)}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-foreground border border-border rounded-lg font-medium hover:bg-secondary/80 transition-colors"
               >
                 <Eye size={18} />
@@ -281,9 +300,9 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex gap-1">
-                    {job.status === 'printing' && (
+                    {['printing', 'waiting_for_printer_ready', 'delayed'].includes(job.status) && (
                       <button
-                        onClick={() => navigate(`/print`)}
+                        onClick={() => navigate(`/print?jobId=${encodeURIComponent(job.id)}`)}
                         className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                         title={t('dashboard.printControl')}
                       >

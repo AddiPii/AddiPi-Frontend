@@ -67,6 +67,8 @@
     "status": {
       "all": "Wszystkie",
       "pending": "Oczekujące",
+      "waiting_for_printer_ready": "Oczekuje na gotowość drukarki",
+      "delayed": "Opóźnione",
       "scheduled": "Zaplanowane",
       "printing": "Drukuje",
       "completed": "Ukończone",
@@ -283,6 +285,13 @@
     "stopSuccess": "Druk został zatrzymany",
     "stopError": "Nie udało się zatrzymać druku",
     "resumeSuccess": "Druk został wznowiony i dodany do kolejki",
-    "resumeError": "Nie udało się wznowić druku"
+    "resumeError": "Nie udało się wznowić druku",
+    "confirmReadyTitle": "Potwierdź gotowość drukarki",
+    "confirmReadyMessage": "Drukarka zostanie oznaczona jako gotowa do kolejnego zlecenia. Upewnij się, że stół jest czysty, nie ma gotowego wydruku i filament jest sprawdzony.",
+    "confirmReadyButton": "Potwierdź gotowość",
+    "confirmReadySuccess": "Gotowość drukarki potwierdzona. Rozpoczynam druk.",
+    "confirmReadyError": "Nie udało się potwierdzić gotowości drukarki.",
+    "waitingSince": "Oczekuje od",
+    "delayedAt": "Opóźniono dnia"
   }
 }

@@ -9,6 +9,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   variant?: 'danger' | 'warning' | 'info';
+  isConfirmDisabled?: boolean;
 }
 
 export function ConfirmDialog({
@@ -20,6 +21,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   variant = 'warning',
+  isConfirmDisabled = false,
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
@@ -46,7 +48,8 @@ export function ConfirmDialog({
         <div className="flex gap-3">
           <button
             onClick={onConfirm}
-            className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors ${buttonStyles[variant]}`}
+            disabled={isConfirmDisabled}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${buttonStyles[variant]}`}
           >
             {confirmLabel}
           </button>

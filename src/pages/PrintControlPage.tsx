@@ -6,7 +6,8 @@ import { useStore } from '../store/useStore';
 import type { Job } from '../types';
 import toast from 'react-hot-toast';
 import { formatDateTimeSafe, formatDuration } from '../utils/formatters';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 interface ApiError {
   response?: {
@@ -18,12 +19,16 @@ interface ApiError {
 
 export default function PrintControlPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const requestedJobId = searchParams.get('jobId');
   const [cameraUrl, setCameraUrl] = useState<string | null>(null)
   const [cameraError, setCameraError] = useState(false);
-  const { printerStatus, user, currentJob, fetchCurrentJob } = useStore();
+  const { printerStatus, user, fetchCurrentJob } = useStore();
   const [displayJob, setDisplayJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [confirmReadyOpen, setConfirmReadyOpen] = useState(false);
+  const [confirmReadyJobId, setConfirmReadyJobId] = useState<string | null>(null);
 
   const canControlJob = (job: Job | null): boolean => {
     if (!job || !user) return false;
@@ -32,6 +37,10 @@ export default function PrintControlPage() {
 
   const canViewJob = (): boolean => {
     return !!user;
+  };
+
+  const isPrioritizedJobStatus = (status?: string): boolean => {
+    return status === 'printing' || status === 'waiting_for_print' || status === 'waiting_for_printer_ready';
   };
 
   useEffect(() => {
@@ -54,16 +63,37 @@ export default function PrintControlPage() {
 
   const loadJobData = async () => {
     try {
+      if (requestedJobId) {
+        const { data } = await api.getJobById(requestedJobId);
+        setDisplayJob(data.job ?? null);
+        return;
+      }
+
       await fetchCurrentJob();
+      const latestCurrentJob = useStore.getState().currentJob;
       
-      if (currentJob && currentJob.status === 'printing') {
-        setDisplayJob(currentJob);
+      if (latestCurrentJob && isPrioritizedJobStatus(latestCurrentJob.status)) {
+        setDisplayJob(latestCurrentJob);
       } else {
-        const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
-        if (data.jobs.length > 0) {
-          setDisplayJob(data.jobs[0]);
+        const waitingCandidates = await Promise.allSettled([
+          api.getUserJobs({ status: 'waiting_for_print', limit: 1, sort: '-scheduledAt' }),
+          api.getUserJobs({ status: 'waiting_for_printer_ready', limit: 1, sort: '-scheduledAt' }),
+        ]);
+
+        const waitingJobs = waitingCandidates
+          .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+          .flatMap(result => result.value.data.jobs)
+          .sort((a, b) => new Date(b.scheduledAt ?? b.createdAt).getTime() - new Date(a.scheduledAt ?? a.createdAt).getTime());
+
+        if (waitingJobs.length > 0) {
+          setDisplayJob(waitingJobs[0]);
         } else {
-          setDisplayJob(null);
+          const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
+          if (data.jobs.length > 0) {
+            setDisplayJob(data.jobs[0]);
+          } else {
+            setDisplayJob(null);
+          }
         }
       }
     } catch (error) {
@@ -103,12 +133,32 @@ export default function PrintControlPage() {
     }
   };
 
+  const handleConfirmReady = async (jobId: string) => {
+    if (actionLoading) return;
+
+    setActionLoading(true);
+    try {
+      await api.confirmPrinterReady(jobId);
+      toast.success(t('printControl.confirmReadySuccess'));
+      setConfirmReadyOpen(false);
+      setConfirmReadyJobId(null);
+      loadJobData();
+    } catch (error) {
+      const err = error as ApiError;
+      toast.error(err.response?.data?.error || t('printControl.confirmReadyError'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-primary/10 text-primary border-primary/20';
       case 'failed': return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'printing': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'waiting_for_printer_ready': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'delayed': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
       case 'scheduled': return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
       case 'cancelled': return 'bg-muted text-muted-foreground border-border';
       default: return 'bg-muted text-muted-foreground border-border';
@@ -121,6 +171,8 @@ export default function PrintControlPage() {
       case 'failed': return <XCircle className="text-destructive" size={28} />;
       case 'printing': return <TrendingUp className="text-blue-400" size={28} />;
       case 'pending': return <Clock className="text-yellow-400" size={28} />;
+      case 'waiting_for_printer_ready': return <AlertCircle className="text-orange-400" size={28} />;
+      case 'delayed': return <AlertCircle className="text-amber-400" size={28} />;
       case 'scheduled': return <Clock className="text-violet-400" size={28} />;
       case 'cancelled': return <AlertCircle className="text-muted-foreground" size={28} />;
       default: return <AlertCircle className="text-muted-foreground" size={28} />;
@@ -132,6 +184,8 @@ export default function PrintControlPage() {
     failed: t('dashboard.status.failed'),
     printing: t('dashboard.status.printing'),
     pending: t('dashboard.status.pending'),
+    waiting_for_printer_ready: t('dashboard.status.waiting_for_printer_ready'),
+    delayed: t('dashboard.status.delayed'),
     scheduled: t('dashboard.status.scheduled'),
     cancelled: t('dashboard.status.cancelled')
   };
@@ -248,10 +302,29 @@ export default function PrintControlPage() {
   const hasControlAccess = canControlJob(displayJob);
   const canCancel = ['scheduled', 'pending', 'printing'].includes(displayJob.status) && hasControlAccess;
   const canRetry = ['failed', 'cancelled'].includes(displayJob.status) && hasControlAccess;
+  const canConfirmReady = ['waiting_for_printer_ready', 'delayed'].includes(displayJob.status) && hasControlAccess;
   const isOwnJob = displayJob.userId === user?.id;
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        isOpen={confirmReadyOpen}
+        title={t('printControl.confirmReadyTitle')}
+        message={t('printControl.confirmReadyMessage')}
+        confirmLabel={t('printControl.confirmReadyButton')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => {
+          if (actionLoading || !confirmReadyJobId) return;
+          handleConfirmReady(confirmReadyJobId);
+        }}
+        onCancel={() => {
+          setConfirmReadyOpen(false);
+          setConfirmReadyJobId(null);
+        }}
+        isConfirmDisabled={actionLoading || !confirmReadyJobId}
+        variant="info"
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -447,7 +520,20 @@ export default function PrintControlPage() {
                       {t('printControl.resumePrint')}
                     </button>
                   )}
-                  {!canCancel && !canRetry && (
+                  {canConfirmReady && (
+                    <button
+                      onClick={() => {
+                        setConfirmReadyJobId(displayJob.id);
+                        setConfirmReadyOpen(true);
+                      }}
+                      disabled={actionLoading}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    >
+                      <CheckCircle size={18} />
+                      {t('printControl.confirmReadyButton')}
+                    </button>
+                  )}
+                  {!canCancel && !canRetry && !canConfirmReady && (
                     <div className="text-center py-4">
                       <CheckCircle className="mx-auto text-muted-foreground mb-2" size={24} />
                       <p className="text-sm text-muted-foreground">{t('printControl.noActions')}</p>
@@ -476,6 +562,8 @@ export default function PrintControlPage() {
               {displayJob.createdAt && <DetailRow label={t('dashboard.created')} value={formatDateTimeSafe(displayJob.createdAt)} />}
               {displayJob.scheduledAt && <DetailRow label={t('printControl.scheduledFor')} value={formatDateTimeSafe(displayJob.scheduledAt)} />}
               {displayJob.startedAt && <DetailRow label={t('printControl.started')} value={formatDateTimeSafe(displayJob.startedAt)} />}
+              {displayJob.waitingStartedAt && <DetailRow label={t('printControl.waitingSince')} value={formatDateTimeSafe(displayJob.waitingStartedAt)} />}
+              {displayJob.delayedAt && <DetailRow label={t('printControl.delayedAt')} value={formatDateTimeSafe(displayJob.delayedAt)} />}
               {displayJob.completedAt && <DetailRow label={t('printControl.completed')} value={formatDateTimeSafe(displayJob.completedAt)} />}
               {displayJob.deviceId && <DetailRow label={t('printControl.deviceId')} value={displayJob.deviceId} mono />}
             </div>
