@@ -91,6 +91,14 @@ export default function HomePage() {
     return labels[status] || status;
   };
 
+  const isWaitingForPrint = (status?: string) => {
+    return status === 'waiting_for_print' || status === 'waiting_for_printer_ready';
+  };
+
+  const upcomingJobsToShow = currentJob && isWaitingForPrint(currentJob.status)
+    ? [currentJob, ...upcomingJobs.filter((job) => job.id !== currentJob.id)]
+    : upcomingJobs;
+
   const statusIndicator = getStatusIndicator(printerStatus?.printerState, printerStatus?.isPrinting);
   const isCurrentJobPrinting = currentJob?.status === 'printing';
 
@@ -325,8 +333,8 @@ export default function HomePage() {
           </div>
           
           <div className="divide-y divide-border">
-            {upcomingJobs.length > 0 ? (
-              upcomingJobs.slice(0, 5).map((job) => (
+            {upcomingJobsToShow.length > 0 ? (
+              upcomingJobsToShow.slice(0, 5).map((job) => (
                 <div key={job.id} className="px-6 py-4 hover:bg-secondary/30 transition-colors">
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0 flex-1">
