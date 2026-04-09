@@ -26,6 +26,7 @@ export default function PrintControlPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmReadyOpen, setConfirmReadyOpen] = useState(false);
+  const [confirmReadyJobId, setConfirmReadyJobId] = useState<string | null>(null);
 
   const canControlJob = (job: Job | null): boolean => {
     if (!job || !user) return false;
@@ -106,11 +107,14 @@ export default function PrintControlPage() {
   };
 
   const handleConfirmReady = async (jobId: string) => {
+    if (actionLoading) return;
+
     setActionLoading(true);
     try {
       await api.confirmPrinterReady(jobId);
       toast.success(t('printControl.confirmReadySuccess'));
       setConfirmReadyOpen(false);
+      setConfirmReadyJobId(null);
       loadJobData();
     } catch (error) {
       const err = error as ApiError;
@@ -282,8 +286,15 @@ export default function PrintControlPage() {
         message={t('printControl.confirmReadyMessage')}
         confirmLabel={t('printControl.confirmReadyButton')}
         cancelLabel={t('common.cancel')}
-        onConfirm={() => handleConfirmReady(displayJob.id)}
-        onCancel={() => setConfirmReadyOpen(false)}
+        onConfirm={() => {
+          if (actionLoading || !confirmReadyJobId) return;
+          handleConfirmReady(confirmReadyJobId);
+        }}
+        onCancel={() => {
+          setConfirmReadyOpen(false);
+          setConfirmReadyJobId(null);
+        }}
+        isConfirmDisabled={actionLoading || !confirmReadyJobId}
         variant="info"
       />
 
@@ -484,7 +495,10 @@ export default function PrintControlPage() {
                   )}
                   {canConfirmReady && (
                     <button
-                      onClick={() => setConfirmReadyOpen(true)}
+                      onClick={() => {
+                        setConfirmReadyJobId(displayJob.id);
+                        setConfirmReadyOpen(true);
+                      }}
                       disabled={actionLoading}
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
                     >
