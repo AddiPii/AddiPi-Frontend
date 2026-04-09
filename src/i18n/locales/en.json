@@ -67,7 +67,7 @@
     "status": {
       "all": "All",
       "pending": "Pending",
-      "waiting_for_printer_ready": "Waiting for printer ready",
+      "waiting_for_printer_ready": "Waiting for the printer to be ready",
       "delayed": "Delayed",
       "scheduled": "Scheduled",
       "printing": "Printing",

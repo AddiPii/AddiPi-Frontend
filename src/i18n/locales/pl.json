@@ -292,6 +292,6 @@
     "confirmReadySuccess": "Gotowość drukarki potwierdzona. Rozpoczynam druk.",
     "confirmReadyError": "Nie udało się potwierdzić gotowości drukarki.",
     "waitingSince": "Oczekuje od",
-    "delayedAt": "Opóźniono o"
+    "delayedAt": "Opóźniono dnia"
   }
 }
