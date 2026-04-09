@@ -85,11 +85,14 @@ export default function HomePage() {
       pending: t('dashboard.status.pending'),
       scheduled: t('dashboard.status.scheduled'),
       cancelled: t('dashboard.status.cancelled'),
+      waiting_for_printer_ready: t('dashboard.status.waiting_for_printer_ready'),
+      waiting_for_print: t('dashboard.status.waiting_for_printer_ready')
     };
     return labels[status] || status;
   };
 
   const statusIndicator = getStatusIndicator(printerStatus?.printerState, printerStatus?.isPrinting);
+  const isCurrentJobPrinting = currentJob?.status === 'printing';
 
   return (
     <div className="space-y-8">
@@ -183,21 +186,29 @@ export default function HomePage() {
                 <span className="text-foreground font-medium truncate pr-4">
                   {currentJob.originalFileName}
                 </span>
-                <span className="text-2xl font-bold text-primary tabular-nums">
-                  {currentJob.progress?.toFixed(1)}%
-                </span>
+                {isCurrentJobPrinting ? (
+                  <span className="text-2xl font-bold text-primary tabular-nums">
+                    {currentJob.progress?.toFixed(1)}%
+                  </span>
+                ) : (
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getJobStatusStyle(currentJob.status)}`}>
+                    {getJobStatusLabel(currentJob.status)}
+                  </span>
+                )}
               </div>
               
-              <div className="relative">
-                <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${currentJob.progress || 0}%` }}
-                  />
+              {isCurrentJobPrinting ? (
+                <div className="relative">
+                  <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${currentJob.progress || 0}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : null}
               
-              {currentJob.printTimeLeft && (
+              {isCurrentJobPrinting && currentJob.printTimeLeft && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock size={14} />
                   <span>{t('home.timeRemaining')}: {Math.round(currentJob.printTimeLeft / 60)} {t('home.min')}</span>

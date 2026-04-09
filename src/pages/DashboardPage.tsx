@@ -139,6 +139,9 @@ export default function DashboardPage() {
     cancelled: t('dashboard.status.cancelled')
   };
 
+  const isCurrentJobPrinting = currentJob?.status === 'printing';
+  const currentJobStatusLabel = currentJob ? (statusLabels[currentJob.status] || currentJob.status) : '';
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -179,19 +182,31 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{currentJob.originalFileName}</p>
                 </div>
               </div>
-              <span className="text-3xl font-bold text-primary tabular-nums">
-                {currentJob.progress?.toFixed(1)}%
-              </span>
+              {isCurrentJobPrinting ? (
+                <span className="text-3xl font-bold text-primary tabular-nums">
+                  {currentJob.progress?.toFixed(1)}%
+                </span>
+              ) : (
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(currentJob.status)}`}>
+                  {currentJobStatusLabel}
+                </span>
+              )}
             </div>
             
-            <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
-                style={{ width: `${currentJob.progress || 0}%` }}
-              />
-            </div>
+            {isCurrentJobPrinting ? (
+              <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-500"
+                  style={{ width: `${currentJob.progress || 0}%` }}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {currentJobStatusLabel}
+              </p>
+            )}
             
-            {currentJob.printTimeLeft && (
+            {isCurrentJobPrinting && currentJob.printTimeLeft && (
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>{t('home.printTime')}: {Math.round((currentJob.printTime || 0) / 60)} {t('home.min')}</span>
                 <span>{t('home.timeRemaining')}: {Math.round(currentJob.printTimeLeft / 60)} {t('home.min')}</span>
