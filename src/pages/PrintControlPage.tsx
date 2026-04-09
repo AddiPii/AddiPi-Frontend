@@ -39,6 +39,10 @@ export default function PrintControlPage() {
     return !!user;
   };
 
+  const isPrioritizedJobStatus = (status?: string): boolean => {
+    return status === 'printing' || status === 'waiting_for_print' || status === 'waiting_for_printer_ready';
+  };
+
   useEffect(() => {
     loadJobData();
     try{
@@ -68,14 +72,28 @@ export default function PrintControlPage() {
       await fetchCurrentJob();
       const latestCurrentJob = useStore.getState().currentJob;
       
-      if (latestCurrentJob && latestCurrentJob.status === 'printing') {
+      if (latestCurrentJob && isPrioritizedJobStatus(latestCurrentJob.status)) {
         setDisplayJob(latestCurrentJob);
       } else {
-        const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
-        if (data.jobs.length > 0) {
-          setDisplayJob(data.jobs[0]);
+        const waitingCandidates = await Promise.allSettled([
+          api.getUserJobs({ status: 'waiting_for_print', limit: 1, sort: '-scheduledAt' }),
+          api.getUserJobs({ status: 'waiting_for_printer_ready', limit: 1, sort: '-scheduledAt' }),
+        ]);
+
+        const waitingJobs = waitingCandidates
+          .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+          .flatMap(result => result.value.data.jobs)
+          .sort((a, b) => new Date(b.scheduledAt ?? b.createdAt).getTime() - new Date(a.scheduledAt ?? a.createdAt).getTime());
+
+        if (waitingJobs.length > 0) {
+          setDisplayJob(waitingJobs[0]);
         } else {
-          setDisplayJob(null);
+          const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
+          if (data.jobs.length > 0) {
+            setDisplayJob(data.jobs[0]);
+          } else {
+            setDisplayJob(null);
+          }
         }
       }
     } catch (error) {
