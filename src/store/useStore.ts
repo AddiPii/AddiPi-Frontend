@@ -102,21 +102,23 @@ export const useStore = create<AppState>()(
 
       fetchCurrentJob: async () => {
         try {
-          const { data: metricsData } = await api.getMetrics();
-          if (metricsData.metrics.printing > 0) {
+          const prioritizedStatuses = ['printing', 'waiting_for_print', 'waiting_for_printer_ready'];
+
+          for (const status of prioritizedStatuses) {
             try {
-              const { data: jobsData } = await api.getAllJobs({ status: 'printing', limit: 1 });
+              const { data: jobsData } = await api.getAllJobs({ status, limit: 1 });
               if (jobsData.jobs.length > 0) {
                 set({ currentJob: jobsData.jobs[0] });
                 return;
               }
             } catch (jobError) {
-              console.error('Failed to fetch current job:', jobError);
+              console.error(`Failed to fetch job with status ${status}:`, jobError);
             }
           }
+
           set({ currentJob: null });
         } catch (error) {
-          console.error('Failed to fetch metrics:', error);
+          console.error('Failed to fetch current job:', error);
           set({ currentJob: null });
         }
       },
