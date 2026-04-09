@@ -81,7 +81,7 @@ export default function PrintControlPage() {
         ]);
 
         const waitingJobs = waitingCandidates
-          .filter((result): result is PromiseFulfilledResult<{ data: { jobs: Job[] } }> => result.status === 'fulfilled')
+          .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
           .flatMap(result => result.value.data.jobs)
           .sort((a, b) => new Date(b.scheduledAt ?? b.createdAt).getTime() - new Date(a.scheduledAt ?? a.createdAt).getTime());
 
