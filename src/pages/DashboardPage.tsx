@@ -208,7 +208,7 @@ export default function DashboardPage() {
                 {t('dashboard.stopPrint')}
               </button>
               <button
-                onClick={() => navigate(`/print`)}
+                onClick={() => navigate(`/print?jobId=${encodeURIComponent(currentJob.id)}`)}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-foreground border border-border rounded-lg font-medium hover:bg-secondary/80 transition-colors"
               >
                 <Eye size={18} />
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                   <div className="flex gap-1">
                     {['printing', 'waiting_for_printer_ready', 'delayed'].includes(job.status) && (
                       <button
-                        onClick={() => navigate(`/print`)}
+                        onClick={() => navigate(`/print?jobId=${encodeURIComponent(job.id)}`)}
                         className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                         title={t('dashboard.printControl')}
                       >

@@ -6,7 +6,7 @@ import { useStore } from '../store/useStore';
 import type { Job } from '../types';
 import toast from 'react-hot-toast';
 import { formatDateTimeSafe, formatDuration } from '../utils/formatters';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 
 interface ApiError {
@@ -19,9 +19,11 @@ interface ApiError {
 
 export default function PrintControlPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const requestedJobId = searchParams.get('jobId');
   const [cameraUrl, setCameraUrl] = useState<string | null>(null)
   const [cameraError, setCameraError] = useState(false);
-  const { printerStatus, user, currentJob, fetchCurrentJob } = useStore();
+  const { printerStatus, user, fetchCurrentJob } = useStore();
   const [displayJob, setDisplayJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -53,14 +55,21 @@ export default function PrintControlPage() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [requestedJobId]);
 
   const loadJobData = async () => {
     try {
+      if (requestedJobId) {
+        const { data } = await api.getJobById(requestedJobId);
+        setDisplayJob(data.job ?? null);
+        return;
+      }
+
       await fetchCurrentJob();
+      const latestCurrentJob = useStore.getState().currentJob;
       
-      if (currentJob && currentJob.status === 'printing') {
-        setDisplayJob(currentJob);
+      if (latestCurrentJob && latestCurrentJob.status === 'printing') {
+        setDisplayJob(latestCurrentJob);
       } else {
         const { data } = await api.getUserJobs({ limit: 1, sort: '-scheduledAt' });
         if (data.jobs.length > 0) {
