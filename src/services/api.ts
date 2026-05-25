@@ -14,7 +14,7 @@ import type {
 const AUTH_URL = `https://addipi-auth-service.vercel.app`;
 const USER_URL = `https://addipi-user-service.vercel.app`;
 const PRINTER_URL = `https://addipi-printer-service.vercel.app/`;
-const FILES_URL = `http://129.159.248.254:5000/`;
+const FILES_URL = `http://129.159.248.254:5000`;
 
 class ApiClient {
   private authClient: AxiosInstance;
