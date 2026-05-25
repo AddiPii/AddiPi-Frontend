@@ -24,12 +24,13 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('pl-PL', {
+  return new Date(date).toLocaleString('pl-PL', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Warsaw',
   });
 }
 
@@ -42,19 +43,19 @@ function normalizeDateString(dateString: string): string {
   // Fix comma separator in milliseconds: "2025-12-05T04:48:22,984Z" -> "2025-12-05T04:48:22.984Z"
   normalized = normalized.replace(/,(\d{3})(Z?)$/, '.$1$2');
   
-  // Ensure Z at the end if it has milliseconds but no timezone
+  // Keep timestamps without an explicit timezone as local wall time.
   if (/T\d{2}:\d{2}:\d{2}\.\d{3}$/.test(normalized)) {
-    normalized += 'Z';
+    return normalized;
   }
-  
-  // Handle format without milliseconds: "2025-12-05T04:49" -> "2025-12-05T04:49:00.000Z"
+
+  // Handle format without milliseconds: "2025-12-05T04:49" -> "2025-12-05T04:49:00.000"
   if (/T\d{2}:\d{2}$/.test(normalized)) {
-    normalized += ':00.000Z';
+    normalized += ':00.000';
   }
   
-  // Handle format with seconds but no milliseconds: "2025-12-05T04:49:00" -> "2025-12-05T04:49:00.000Z"
+  // Handle format with seconds but no milliseconds: "2025-12-05T04:49:00" -> "2025-12-05T04:49:00.000"
   if (/T\d{2}:\d{2}:\d{2}$/.test(normalized)) {
-    normalized += '.000Z';
+    normalized += '.000';
   }
   
   return normalized;
@@ -79,7 +80,7 @@ export function formatDateTimeSafe(dateString?: string): string {
     const normalized = normalizeDateString(dateString);
     const date = new Date(normalized);
     if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleString('pl-PL');
+    return date.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' });
   } catch {
     return dateString;
   }

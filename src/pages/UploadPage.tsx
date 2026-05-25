@@ -96,7 +96,8 @@ export default function UploadPage() {
   const getMinDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 5);
-    return now.toISOString().slice(0, 16);
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return localNow.toISOString().slice(0, 16);
   };
 
   return (
