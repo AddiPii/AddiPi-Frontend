@@ -6,5 +6,11 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    proxy: {
+      '/files': {
+        target: 'http://129.159.248.254:5000',
+        changeOrigin: true,
+      },
+    },
   },
 });

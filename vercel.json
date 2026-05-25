@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/files/(.*)", "destination": "http://129.159.248.254:5000/files/$1" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
