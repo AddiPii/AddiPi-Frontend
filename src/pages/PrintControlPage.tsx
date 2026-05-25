@@ -300,7 +300,7 @@ export default function PrintControlPage() {
 
   const isCurrentlyPrinting = displayJob.status === 'printing';
   const hasControlAccess = canControlJob(displayJob);
-  const canCancel = ['scheduled', 'pending', 'printing'].includes(displayJob.status) && hasControlAccess;
+  const canCancel = ['scheduled', 'pending', 'printing', 'waiting_for_printer_ready', 'delayed'].includes(displayJob.status) && hasControlAccess;
   const canRetry = ['failed', 'cancelled'].includes(displayJob.status) && hasControlAccess;
   const canConfirmReady = ['waiting_for_printer_ready', 'delayed'].includes(displayJob.status) && hasControlAccess;
   const isOwnJob = displayJob.userId === user?.id;
@@ -531,6 +531,16 @@ export default function PrintControlPage() {
                     >
                       <CheckCircle size={18} />
                       {t('printControl.confirmReadyButton')}
+                    </button>
+                  )}
+                  {canConfirmReady && canCancel && (
+                    <button
+                      onClick={() => handleCancelJob(displayJob.id)}
+                      disabled={actionLoading}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
+                    >
+                      <Square size={18} />
+                      {t('printControl.cancelTask')}
                     </button>
                   )}
                   {!canCancel && !canRetry && !canConfirmReady && (
