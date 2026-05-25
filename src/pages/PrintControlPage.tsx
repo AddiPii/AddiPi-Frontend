@@ -300,7 +300,7 @@ export default function PrintControlPage() {
 
   const isCurrentlyPrinting = displayJob.status === 'printing';
   const hasControlAccess = canControlJob(displayJob);
-  const canCancel = ['scheduled', 'pending', 'printing'].includes(displayJob.status) && hasControlAccess;
+  const canCancel = ['scheduled', 'pending', 'printing', 'waiting_for_printer_ready', 'delayed'].includes(displayJob.status) && hasControlAccess;
   const canRetry = ['failed', 'cancelled'].includes(displayJob.status) && hasControlAccess;
   const canConfirmReady = ['waiting_for_printer_ready', 'delayed'].includes(displayJob.status) && hasControlAccess;
   const isOwnJob = displayJob.userId === user?.id;

@@ -141,6 +141,7 @@ export default function DashboardPage() {
 
   const isCurrentJobPrinting = currentJob?.status === 'printing';
   const currentJobStatusLabel = currentJob ? (statusLabels[currentJob.status] || currentJob.status) : '';
+  const canCancelJob = (job: Job) => ['scheduled', 'pending', 'printing'].includes(job.status) && (user?.role === 'admin' || job.userId === user?.id);
 
   return (
     <div className="space-y-6">
@@ -319,7 +320,7 @@ export default function DashboardPage() {
                         <RefreshCw size={18} />
                       </button>
                     )}
-                    {['scheduled', 'pending', 'printing'].includes(job.status) && user?.role === 'admin' && (
+                    {canCancelJob(job) && (
                       <button
                         onClick={() => handleCancelJob(job.id)}
                         disabled={loading}
