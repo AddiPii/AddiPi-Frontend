@@ -1,5 +1,8 @@
 {
   "rewrites": [
+    { "source": "/auth/(.*)", "destination": "http://129.159.248.254:3001/auth/$1" },
+    { "source": "/users/(.*)", "destination": "http://129.159.248.254:3002/users/$1" },
+    { "source": "/printer/(.*)", "destination": "http://129.159.248.254:3050/printer/$1" },
     { "source": "/files/(.*)", "destination": "http://129.159.248.254:5000/files/$1" },
     { "source": "/(.*)", "destination": "/" }
   ]
