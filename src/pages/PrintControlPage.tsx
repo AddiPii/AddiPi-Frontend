@@ -533,16 +533,6 @@ export default function PrintControlPage() {
                       {t('printControl.confirmReadyButton')}
                     </button>
                   )}
-                  {canConfirmReady && canCancel && (
-                    <button
-                      onClick={() => handleCancelJob(displayJob.id)}
-                      disabled={actionLoading}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
-                    >
-                      <Square size={18} />
-                      {t('printControl.cancelTask')}
-                    </button>
-                  )}
                   {!canCancel && !canRetry && !canConfirmReady && (
                     <div className="text-center py-4">
                       <CheckCircle className="mx-auto text-muted-foreground mb-2" size={24} />
