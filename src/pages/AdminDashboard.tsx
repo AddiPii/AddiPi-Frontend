@@ -33,9 +33,15 @@ export default function AdminDashboard() {
   const loadUsers = async () => {
     try {
       const { data } = await api.getAllUsers({ limit: 100 });
-      setUsers(data.users);
+      const usersList = Array.isArray((data as { users?: User[] })?.users)
+        ? (data as { users: User[] }).users
+        : Array.isArray(data)
+          ? (data as User[])
+          : [];
+      setUsers(usersList);
     } catch {
       toast.error(t('admin.errorLoadUsers'));
+      setUsers([]);
     }
   };
 
@@ -43,9 +49,15 @@ export default function AdminDashboard() {
     try {
       const params = jobStatus !== 'all' ? { status: jobStatus, limit: 100 } : { limit: 100 };
       const { data } = await api.getAllJobs(params);
-      setJobs(data.jobs);
+      const jobsList = Array.isArray((data as { jobs?: Job[] })?.jobs)
+        ? (data as { jobs: Job[] }).jobs
+        : Array.isArray(data)
+          ? (data as Job[])
+          : [];
+      setJobs(jobsList);
     } catch {
       toast.error(t('admin.errorLoadJobs'));
+      setJobs([]);
     }
   };
 

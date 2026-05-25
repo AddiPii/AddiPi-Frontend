@@ -11,9 +11,9 @@ import type {
 // const PRINTER_URL = `${API_BASE}:3050`;
 // const FILES_URL = `${API_BASE}:5000`;
 
-const AUTH_URL = `https://addipi-auth-service.vercel.app`;
-const USER_URL = `https://addipi-user-service.vercel.app`;
-const PRINTER_URL = `https://addipi-printer-service.vercel.app/`;
+const AUTH_URL = '/';
+const USER_URL = '/';
+const PRINTER_URL = '/';
 const FILES_URL = '/';
 
 class ApiClient {
