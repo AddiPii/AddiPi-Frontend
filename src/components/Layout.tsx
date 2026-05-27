@@ -207,15 +207,6 @@ export default function Layout() {
                 <Link to="/upload" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.upload')}</Link>
                 <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.dashboard')}</Link>
                 <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.profile')}</Link>
-                <button
-                  type="button"
-                  onClick={handleDownloadPrinterConfig}
-                  disabled={isPrinterConfigDownloading}
-                  className="flex items-center gap-2 text-left text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Download size={16} />
-                  <span>{isPrinterConfigDownloading ? t('footer.downloadingPrinterConfig') : t('footer.downloadPrinterConfig')}</span>
-                </button>
               </div>
             </div>
 
@@ -244,6 +235,15 @@ export default function Layout() {
                 >
                   LinkedIn
                 </a>
+                <button
+                  type="button"
+                  onClick={handleDownloadPrinterConfig}
+                  disabled={isPrinterConfigDownloading}
+                  className="flex items-center gap-2 text-left text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Download size={16} />
+                  <span>{isPrinterConfigDownloading ? t('footer.downloadingPrinterConfig') : t('footer.downloadPrinterConfig')}</span>
+                </button>
               </div>
             </div>
           </div>
