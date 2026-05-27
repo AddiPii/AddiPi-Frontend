@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, Upload, LayoutDashboard, Shield, User, LogOut, Gauge, ChevronRight, Download } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { ConnectionStatus } from './ConnectionStatus';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageToggle } from './LanguageToggle';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import useFileDownload from '../hooks/useFileDownload';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +15,9 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { downloadFile, isLoading: isPrinterConfigDownloading, error: printerConfigDownloadError } = useFileDownload();
+
+  const printerConfigUrl = 'https://raw.githubusercontent.com/AddiPii/CAD/refs/heads/main/Printer%20config/config.ini';
 
   const handleLogout = async () => {
     try {
@@ -39,6 +43,14 @@ export default function Layout() {
     if (item.admin && user?.role !== 'admin') return false;
     return true;
   });
+
+  const handleDownloadPrinterConfig = async () => {
+    try {
+      await downloadFile(printerConfigUrl, 'config.ini');
+    } catch {
+      toast.error(printerConfigDownloadError ?? t('footer.downloadError'));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,6 +235,15 @@ export default function Layout() {
                 >
                   LinkedIn
                 </a>
+                <button
+                  type="button"
+                  onClick={handleDownloadPrinterConfig}
+                  disabled={isPrinterConfigDownloading}
+                  className="flex mt-1 items-center gap-2 text-left text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Download size={16} />
+                  <span>{isPrinterConfigDownloading ? t('footer.downloadingPrinterConfig') : t('footer.downloadPrinterConfig')}</span>
+                </button>
               </div>
             </div>
           </div>
