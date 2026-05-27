@@ -195,6 +195,7 @@ export default function Layout() {
                 <Link to="/upload" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.upload')}</Link>
                 <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.dashboard')}</Link>
                 <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.profile')}</Link>
+                <Link to="https://raw.githubusercontent.com/AddiPii/CAD/refs/heads/main/Printer%20config/config.ini" download="config.ini" className="text-muted-foreground hover:text-foreground transition-colors">{t('nav.config')}</Link>
               </div>
             </div>
 
