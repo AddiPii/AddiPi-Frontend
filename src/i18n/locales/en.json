@@ -161,6 +161,9 @@
   "footer": {
     "description": "3D printer management system. Monitor and control prints in real-time.",
     "links": "Links",
+    "downloadPrinterConfig": "Download printer config",
+    "downloadingPrinterConfig": "Downloading printer config...",
+    "downloadError": "Failed to download printer config",
     "contact": "Contact",
     "rights": "All rights reserved"
   },

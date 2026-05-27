@@ -161,6 +161,9 @@
   "footer": {
     "description": "System zarządzania drukarką 3D. Monitoruj i kontroluj druk w czasie rzeczywistym.",
     "links": "Linki",
+    "downloadPrinterConfig": "Pobierz konfigurację drukarki",
+    "downloadingPrinterConfig": "Pobieranie konfiguracji drukarki...",
+    "downloadError": "Nie udało się pobrać konfiguracji drukarki",
     "contact": "Kontakt",
     "rights": "Wszelkie prawa zastrzeżone"
   },
