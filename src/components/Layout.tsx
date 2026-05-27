@@ -239,7 +239,7 @@ export default function Layout() {
                   type="button"
                   onClick={handleDownloadPrinterConfig}
                   disabled={isPrinterConfigDownloading}
-                  className="flex items-center gap-2 text-left text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex mt-1 items-center gap-2 text-left text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Download size={16} />
                   <span>{isPrinterConfigDownloading ? t('footer.downloadingPrinterConfig') : t('footer.downloadPrinterConfig')}</span>
