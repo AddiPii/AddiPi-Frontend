@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { pl, enUS } from 'date-fns/locale';
+import i18n from '../i18n/config';
 
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
@@ -24,7 +25,8 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleString('pl-PL', {
+  const intlLocale = i18n?.language === 'en' ? 'en-US' : 'pl-PL';
+  return new Date(date).toLocaleString(intlLocale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -68,7 +70,8 @@ export function formatDateSafe(dateString?: string): string {
     const normalized = normalizeDateString(dateString);
     const date = new Date(normalized);
     if (isNaN(date.getTime())) return 'Invalid date';
-    return formatDistanceToNow(date, { addSuffix: true, locale: pl });
+    const dfnsLocale = i18n?.language === 'en' ? enUS : pl;
+    return formatDistanceToNow(date, { addSuffix: true, locale: dfnsLocale });
   } catch {
     return dateString;
   }
@@ -80,7 +83,8 @@ export function formatDateTimeSafe(dateString?: string): string {
     const normalized = normalizeDateString(dateString);
     const date = new Date(normalized);
     if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' });
+    const intlLocale = i18n?.language === 'en' ? 'en-US' : 'pl-PL';
+    return date.toLocaleString(intlLocale, { timeZone: 'Europe/Warsaw' });
   } catch {
     return dateString;
   }
