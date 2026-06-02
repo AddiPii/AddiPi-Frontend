@@ -86,7 +86,7 @@ class ApiClient {
   }
 
   async verifyEmail(token: string) {
-    return this.authClient.get(`/auth/verify-email?token=${token}`);
+    return this.authClient.post('/auth/verify-email', { token });
   }
 
   async resendVerification(email: string) {
