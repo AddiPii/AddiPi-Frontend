@@ -221,7 +221,10 @@
     "errorTitle": "Verification Failed",
     "error": "Failed to verify email",
     "errorNoToken": "Missing verification token",
-    "goToLogin": "Go to Login"
+    "goToLogin": "Go to Login",
+    "readyTitle": "Confirm your email",
+    "readyDescription": "Click the button below to complete verification.",
+    "verifyButton": "Verify email"
   },
   "verifyInfo": {
     "title": "Check Your Email",

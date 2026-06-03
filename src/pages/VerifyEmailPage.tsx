@@ -8,34 +8,34 @@ export default function VerifyEmailPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-
   useEffect(() => {
-    const verifyEmail = async () => {
-      const token = searchParams.get('token');
+    const token = searchParams.get('token');
+    if (!token) {
+      setStatus('error');
+      setMessage(t('verify.errorNoToken'));
+    } else {
+      setStatus('idle');
+    }
+  }, [searchParams, t]);
 
-      if (!token) {
-        setStatus('error');
-        setMessage(t('verify.errorNoToken'));
-        return;
-      }
-
-      try {
-        await api.verifyEmail(token);
-        setStatus('success');
-        setMessage(t('verify.success'));
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
-      } catch (error: any) {
-        setStatus('error');
-        setMessage(error.response?.data?.error || t('verify.error'));
-      }
-    };
-
-    verifyEmail();
-  }, [searchParams, navigate, t]);
+  const handleVerify = async () => {
+    const token = searchParams.get('token');
+    if (!token) return;
+    setStatus('loading');
+    try {
+      await api.verifyEmail(token);
+      setStatus('success');
+      setMessage(t('verify.success'));
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } catch (error: any) {
+      setStatus('error');
+      setMessage(error.response?.data?.error || t('verify.error'));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -85,6 +85,23 @@ export default function VerifyEmailPage() {
                   className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   {t('verify.goToLogin')}
+                </button>
+              </div>
+            </>
+          )}
+          {status === 'idle' && (
+            <>
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full">
+                <CheckCircle className="text-primary" size={32} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">{t('verify.readyTitle')}</h1>
+                <p className="text-muted-foreground mb-4">{t('verify.readyDescription')}</p>
+                <button
+                  onClick={handleVerify}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                >
+                  {t('verify.verifyButton')}
                 </button>
               </div>
             </>
