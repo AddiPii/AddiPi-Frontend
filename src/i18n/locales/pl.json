@@ -221,7 +221,10 @@
     "errorTitle": "Weryfikacja nie powiodła się",
     "error": "Nie udało się zweryfikować emaila",
     "errorNoToken": "Brak tokenu weryfikacyjnego",
-    "goToLogin": "Przejdź do logowania"
+    "goToLogin": "Przejdź do logowania",
+    "readyTitle": "Potwierdź swój email",
+    "readyDescription": "Kliknij przycisk poniżej, aby dokończyć weryfikację.",
+    "verifyButton": "Zweryfikuj email"
   },
   "verifyInfo": {
     "title": "Sprawdź swoją skrzynkę email",
