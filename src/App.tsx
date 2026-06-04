@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useStore } from './store/useStore';
@@ -30,7 +30,8 @@ function ProtectedRoute({ children, requireAdmin = false }: { children: React.Re
 }
 
 export default function App() {
-  const { isAuthenticated, theme, fetchCurrentUser, fetchPrinterStatus, fetchMetrics } = useStore();
+  const { theme, restoreSession, fetchPrinterStatus, fetchMetrics } = useStore();
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   // Initialize theme on mount and when it changes
   useEffect(() => {
@@ -42,10 +43,21 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchCurrentUser();
-    }
-  }, [isAuthenticated, fetchCurrentUser]);
+    let active = true;
+
+    const initializeAuth = async () => {
+      await restoreSession();
+      if (active) {
+        setIsAuthReady(true);
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      active = false;
+    };
+  }, [restoreSession]);
 
   useEffect(() => {
     fetchPrinterStatus();
@@ -58,6 +70,17 @@ export default function App() {
 
     return () => clearInterval(interval);
   }, [fetchPrinterStatus, fetchMetrics]);
+
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>

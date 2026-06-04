@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Job, PrinterStatus, Metrics } from '../types';
-import { api } from '../services/api';
+import { api, configureAuthHandlers } from '../services/api';
 
 interface AppState {
   // Auth
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  accessToken: string | null;
   
   // Printer
   printerStatus: PrinterStatus | null;
@@ -22,6 +23,7 @@ interface AppState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
+  restoreSession: () => Promise<boolean>;
   fetchCurrentUser: () => Promise<void>;
   fetchPrinterStatus: () => Promise<void>;
   fetchMetrics: () => Promise<void>;
@@ -34,10 +36,18 @@ interface AppState {
 
 export const useStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      configureAuthHandlers({
+        getAccessToken: () => get().accessToken,
+        setAccessToken: (accessToken) => set({ accessToken }),
+        clearAuth: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+      });
+
+      return {
       user: null,
-      isAuthenticated: !!localStorage.getItem('accessToken'),
+      isAuthenticated: false,
       isLoading: false,
+      accessToken: null,
       printerStatus: null,
       metrics: null,
       currentJob: null,
@@ -48,7 +58,7 @@ export const useStore = create<AppState>()(
         set({ isLoading: true });
         try {
           const data = await api.login({ email, password });
-          set({ user: data.user, isAuthenticated: true, isLoading: false });
+          set({ user: data.user, accessToken: data.accessToken, isAuthenticated: true, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
           throw error;
@@ -56,8 +66,11 @@ export const useStore = create<AppState>()(
       },
 
       logout: async () => {
-        await api.logout();
-        set({ user: null, isAuthenticated: false });
+        try {
+          await api.logout();
+        } finally {
+          set({ user: null, accessToken: null, isAuthenticated: false });
+        }
       },
 
       register: async (data) => {
@@ -71,14 +84,26 @@ export const useStore = create<AppState>()(
         }
       },
 
+      restoreSession: async () => {
+        try {
+          const { data } = await api.refreshSession();
+          set({ accessToken: data.accessToken, isAuthenticated: true });
+          await get().fetchCurrentUser();
+          return true;
+        } catch (error) {
+          set({ user: null, accessToken: null, isAuthenticated: false });
+          return false;
+        }
+      },
+
       fetchCurrentUser: async () => {
-        if (!get().isAuthenticated) return;
+        if (!get().accessToken) return;
         try {
           const { data } = await api.getCurrentUser();
           set({ user: data });
         } catch (error) {
           console.error('Failed to fetch user:', error);
-          set({ user: null, isAuthenticated: false });
+          set({ user: null, accessToken: null, isAuthenticated: false });
         }
       },
 
@@ -143,7 +168,8 @@ export const useStore = create<AppState>()(
         set({ language });
         localStorage.setItem('language', language);
       },
-    }),
+      };
+    },
     {
       name: 'addipi-settings',
       partialize: (state) => ({ 
