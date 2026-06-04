@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/auth': {
-        target: 'http://129.159.248.254:3001',
+        target: 'https://addipi-auth-service-git-development-oliwers-projects-d5e8db11.vercel.app/',
         changeOrigin: true,
       },
       '/users': {

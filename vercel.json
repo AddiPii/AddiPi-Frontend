@@ -1,7 +1,7 @@
 {
   "rewrites": [
-    { "source": "/auth", "destination": "http://129.159.248.254:3001/auth" },
-    { "source": "/auth/(.*)", "destination": "http://129.159.248.254:3001/auth/$1" },
+    { "source": "/auth", "destination": "https://addipi-auth-service-git-development-oliwers-projects-d5e8db11.vercel.app/auth" },
+    { "source": "/auth/(.*)", "destination": "https://addipi-auth-service-git-development-oliwers-projects-d5e8db11.vercel.app/auth/$1" },
     { "source": "/users", "destination": "http://129.159.248.254:3002/users" },
     { "source": "/users/(.*)", "destination": "http://129.159.248.254:3002/users/$1" },
     { "source": "/printer", "destination": "http://129.159.248.254:3050/printer" },
