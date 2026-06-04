@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance, type AxiosRequestConfig } from 'axios';
 import type { 
   User, Job, PrinterStatus, Metrics, UserStats, 
   FileUploadResponse, AuthResponse, LoginCredentials, RegisterData 
@@ -16,6 +16,22 @@ const USER_URL = '/';
 const PRINTER_URL = '/';
 const FILES_URL = '/';
 
+type AuthHandlers = {
+  getAccessToken: () => string | null;
+  setAccessToken: (token: string | null) => void;
+  clearAuth: () => void;
+};
+
+let authHandlers: AuthHandlers = {
+  getAccessToken: () => null,
+  setAccessToken: () => undefined,
+  clearAuth: () => undefined,
+};
+
+export const configureAuthHandlers = (handlers: Partial<AuthHandlers>) => {
+  authHandlers = { ...authHandlers, ...handlers };
+};
+
 class ApiClient {
   private authClient: AxiosInstance;
   private userClient: AxiosInstance;
@@ -23,14 +39,14 @@ class ApiClient {
   private filesClient: AxiosInstance;
 
   constructor() {
-    this.authClient = axios.create({ baseURL: AUTH_URL });
+    this.authClient = axios.create({ baseURL: AUTH_URL, withCredentials: true });
     this.userClient = axios.create({ baseURL: USER_URL });
     this.printerClient = axios.create({ baseURL: PRINTER_URL });
     this.filesClient = axios.create({ baseURL: FILES_URL });
 
     [this.userClient, this.printerClient, this.filesClient].forEach(client => {
       client.interceptors.request.use(config => {
-        const token = localStorage.getItem('accessToken');
+        const token = authHandlers.getAccessToken();
         if (token) config.headers.Authorization = `Bearer ${token}`;
         return config;
       });
@@ -38,20 +54,19 @@ class ApiClient {
       client.interceptors.response.use(
         response => response,
         async (error: AxiosError) => {
-          if (error.response?.status === 401) {
+          const originalRequest = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
+
+          if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+            originalRequest._retry = true;
             try {
-              const refreshToken = localStorage.getItem('refreshToken');
-              if (refreshToken) {
-                const { data } = await this.authClient.patch<Omit<AuthResponse, 'user'>>('/auth/refresh', { refreshToken });
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('refreshToken', data.refreshToken);
-                if (error.config) {
-                  error.config.headers.Authorization = `Bearer ${data.accessToken}`;
-                  return axios.request(error.config);
-                }
-              }
+              const { data } = await this.refreshSession();
+              authHandlers.setAccessToken(data.accessToken);
+
+              originalRequest.headers = originalRequest.headers ?? {};
+              originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+              return axios.request(originalRequest);
             } catch {
-              this.logout();
+              authHandlers.clearAuth();
             }
           }
           return Promise.reject(error);
@@ -67,22 +82,16 @@ class ApiClient {
 
   async login(credentials: LoginCredentials) {
     const { data } = await this.authClient.post<AuthResponse>('/auth/login', credentials);
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
+    authHandlers.setAccessToken(data.accessToken);
     return data;
   }
 
+  async refreshSession() {
+    return this.authClient.patch<Omit<AuthResponse, 'user'>>('/auth/refresh');
+  }
+
   async logout() {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      try {
-        await this.authClient.post('/auth/logout', { refreshToken });
-      } catch(e) {
-        console.log('error: ', e)
-      }
-    }
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    await this.authClient.post('/auth/logout');
   }
 
   async verifyEmail(token: string) {
