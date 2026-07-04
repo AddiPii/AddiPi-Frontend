@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, FileText, Trash2, RefreshCw, Shield, UserX, Square, ChevronDown } from 'lucide-react';
+import { Users, FileText, Trash2, RefreshCw, Shield, UserX, Square, ChevronDown, BadgeCheck } from 'lucide-react';
 import { api } from '../services/api';
 import type { User, Job } from '../types';
 import toast from 'react-hot-toast';
@@ -91,6 +91,21 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+
+  const handleToggleVerifyStatus = async (userId: string) => {
+    setLoading(true)
+
+    try {
+      await api.switchUserVerifyStatus(userId)
+      toast.success(t('admin.userVerified'))
+      loadUsers()
+    } catch (error) {
+      const err = error as ApiError;
+      toast.error(err.response?.data?.error || t('admin.errorVerifyUser'));
+    } finally {
+      setLoading(false)
+    }
+  } 
 
   const handleCancelJob = async (jobId: string) => {
     if (!window.confirm(t('admin.confirmCancelJob'))) return;
@@ -278,6 +293,16 @@ export default function AdminDashboard() {
                           title={t('admin.deleteUser')}
                         >
                           <UserX size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleVerifyStatus(user.id)}
+                          disabled={loading}
+                          className={`p-2 hover:bg-primary/10 rounded-lg disabled:opacity-50 transition-colors ${
+                            user.isVerified === true ? 'text-gray-400' : 'text-primary'
+                          }`}
+                          title={user.isVerified === true ? t('admin.unverifyUser') : t('admin.verifyUser')}
+                        >
+                          <BadgeCheck size={18} />
                         </button>
                       </div>
                     </td>
