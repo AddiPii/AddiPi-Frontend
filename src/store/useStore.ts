@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Job, PrinterStatus, Metrics } from '../types';
 import { api, configureAuthHandlers } from '../services/api';
-import { toast } from 'react-hot-toast';
 
 interface AppState {
   // Auth
@@ -41,20 +40,7 @@ export const useStore = create<AppState>()(
       configureAuthHandlers({
         getAccessToken: () => get().accessToken,
         setAccessToken: (accessToken) => set({ accessToken }),
-        clearAuth: () => {
-          set({ user: null, accessToken: null, isAuthenticated: false });
-          try {
-            toast.error('Sesja wygasła — zaloguj się ponownie');
-          } catch (e) {
-            // ignore if toast cannot be shown
-          }
-          // redirect to login page
-          try {
-            window.location.href = '/login';
-          } catch (e) {
-            // ignore
-          }
-        },
+        clearAuth: () => set({ user: null, accessToken: null, isAuthenticated: false }),
       });
 
       return {
