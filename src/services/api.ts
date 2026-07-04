@@ -153,6 +153,10 @@ class ApiClient {
     return this.userClient.delete(`/users/jobs/${jobId}`);
   }
 
+  async switchUserVerifyStatus(userId: string) {
+    return this.userClient.patch<Omit<User, 'password'>>(`/users/verify/${userId}`)
+  }
+
   // Printer
   async getAllJobs(params?: { status?: string; limit?: number; offset?: number }) {
     return this.printerClient.get<{ jobs: Job[]; count: number; limit: number; offset: number }>(
