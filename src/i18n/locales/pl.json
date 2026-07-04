@@ -146,7 +146,7 @@
     "progress": "Postęp",
     "roleChanged": "Rola zmieniona na {{role}}",
     "userDeleted": "Użytkownik został usunięty",
-    "userVerified": "Użytkownik zweryfikowany",
+    "userVerified": "Status weryfikacji użytkownika zmieniony",
     "jobCancelled": "Druk został anulowany",
     "jobRetried": "Druk został ponownie dodany do kolejki",
     "jobDeleted": "Zadanie zostało usunięte",
@@ -157,7 +157,7 @@
     "errorLoadJobs": "Nie udało się załadować zadań",
     "errorChangeRole": "Nie udało się zmienić roli",
     "errorDeleteUser": "Nie udało się usunąć użytkownika",
-    "errorVerifyUser": "Nie udało się zweryfikować użytkownika",
+    "errorVerifyUser": "Nie udało się zmienić statusu weryfikacji użytkownika",
     "errorCancelJob": "Nie udało się anulować druku",
     "errorRetryJob": "Nie udało się ponowić druku",
     "errorDeleteJob": "Nie udało się usunąć zadania"
